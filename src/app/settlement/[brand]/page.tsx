@@ -59,7 +59,7 @@ export default async function BrandSettlementStatementPage({ params, searchParam
 
   return (
     <div className="min-h-dvh bg-stone-100 py-6 px-4 print:p-0 print:py-0 print:px-0 print:bg-white text-stone-900 font-sans">
-      {/* Print Stylesheet กำหนดให้พิมพ์ A4 พอดี 1 หน้า ไม่ล้น และซ่อน header/footer ของเบราว์เซอร์ (URL http://) */}
+      {/* Print Stylesheet กำหนดให้พิมพ์ A4 พอดี 1 หน้า ไม่ล้น และซ่อน header/footer ของเบราว์เซอร์ */}
       <style
         dangerouslySetInnerHTML={{
           __html: `
@@ -108,7 +108,7 @@ export default async function BrandSettlementStatementPage({ params, searchParam
       <div className="max-w-[210mm] mx-auto mb-4 flex items-center justify-between no-print">
         <Link
           href={data.periodKey ? `/settlement?period=${encodeURIComponent(data.periodKey)}` : "/settlement"}
-          className="inline-flex items-center min-h-[44px] gap-1.5 text-xs font-semibold text-stone-600 hover:text-stone-900 bg-white border border-stone-200 px-3.5 py-2.5 rounded-xl shadow-sm transition-all active:scale-95"
+          className="inline-flex items-center min-h-[44px] gap-1.5 text-xs font-semibold text-stone-600 hover:text-stone-900 bg-white border border-stone-200 px-3.5 py-2.5 rounded-xl shadow-xs transition-all active:scale-95"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>กลับหน้ารายการ</span>
@@ -125,11 +125,11 @@ export default async function BrandSettlementStatementPage({ params, searchParam
         />
       </div>
 
-      {/* แผ่นกระดาษ A4 (ปรับ padding & spacing ให้พอดี 1 หน้าเมื่อบันทึกเป็น PDF) */}
+      {/* แผ่นกระดาษ A4 (โครงสร้างเรียบง่าย ชัดเจน ถูกต้องตามหลักบัญชี) */}
       <main className="a4-sheet max-w-[210mm] mx-auto bg-white p-6 md:p-8 shadow-lg print:shadow-none print:p-0 border border-stone-200 print:border-none rounded-2xl print:rounded-none flex flex-col justify-between box-border">
         <div className="space-y-4 print:space-y-3">
-          {/* Header เอกสาร */}
-          <header className="border-b border-stone-200 pb-3.5 flex justify-between items-start">
+          {/* 1. Header เอกสาร */}
+          <header className="border-b border-stone-200 pb-3 flex justify-between items-start">
             <div>
               <div className="flex items-center gap-2.5">
                 <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-700 flex items-center justify-center font-bold text-base overflow-hidden border border-amber-200">
@@ -143,7 +143,7 @@ export default async function BrandSettlementStatementPage({ params, searchParam
                 </div>
               </div>
 
-              <p className="text-[9px] text-stone-500 leading-tight mt-0.5">
+              <p className="text-[9px] text-stone-500 leading-tight mt-1">
                 {STORE_PROFILE.address}
               </p>
               <p className="text-[9px] text-stone-500 mt-0.5" suppressHydrationWarning>
@@ -157,7 +157,7 @@ export default async function BrandSettlementStatementPage({ params, searchParam
                   ? "bg-emerald-50 text-emerald-800 border-emerald-200" 
                   : "bg-amber-50 text-amber-800 border-amber-200"
               }`}>
-                ใบสรุปยอดสินค้าฝากขาย {isCleared ? "(ชำระเงินเรียบร้อยแล้ว ✓)" : "(รอโอนเงิน)"}
+                {isCleared ? "ใบสรุปยอดฝากขาย (ชำระเงินแล้ว ✓)" : "ใบสรุปยอดฝากขาย (รอโอนเงิน)"}
               </span>
               <p className="text-xs font-mono font-bold text-stone-700 pt-0.5">
                 เลขที่: {data.statementNumber}
@@ -168,8 +168,8 @@ export default async function BrandSettlementStatementPage({ params, searchParam
             </div>
           </header>
 
-          {/* ข้อมูลคู่ค้าและรอบบัญชี */}
-          <section className="bg-stone-50 rounded-xl p-3 border border-stone-200/80 grid grid-cols-2 gap-4 text-xs">
+          {/* 2. ข้อมูลคู่ค้า & รอบสรุปยอด */}
+          <section className="bg-stone-50/80 p-3 rounded-xl border border-stone-200 flex items-center justify-between">
             <div>
               <span className="text-[10px] text-stone-400 font-bold uppercase tracking-wider block">
                 คู่ค้า / แบรนด์สินค้า (Consignee)
@@ -183,40 +183,15 @@ export default async function BrandSettlementStatementPage({ params, searchParam
               </span>
               <p className="text-xs font-bold text-amber-800 mt-0.5">{data.periodText}</p>
               <p className={`text-[11px] font-bold mt-0.5 ${isCleared ? "text-emerald-700" : "text-amber-700"}`}>
-                สถานะ: {isCleared ? "เคลียร์ยอดโอนเงินเรียบร้อยแล้ว ✓" : "รอตัดรอบโอนเงิน"}
+                สถานะ: {isCleared ? "โอนเงินเรียบร้อยแล้ว ✓" : "รอตัดรอบโอนเงิน"}
               </p>
             </div>
           </section>
 
-          {/* สรุปตัวเลข 3 กล่อง */}
-          <section className="grid grid-cols-3 gap-2.5">
-            <div className="p-3 rounded-xl border border-stone-200 bg-white">
-              <span className="text-[10px] text-stone-500 block font-semibold">1. ยอดขายหน้าร้านรวม</span>
-              <span className="text-base font-black text-stone-900">฿{data.totalSales.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-              <span className="text-[10px] text-stone-400 block mt-0.5">{data.totalQuantity} ชิ้น</span>
-            </div>
-            <div className="p-3 rounded-xl border border-stone-200 bg-white">
-              <span className="text-[10px] text-stone-500 block font-semibold">2. ส่วนแบ่งร้าน (GP)</span>
-              <span className="text-base font-black text-stone-700">฿{data.totalShopProfit.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-              <span className="text-[10px] text-stone-400 block mt-0.5">หักส่วนแบ่งร้านตามตกลง</span>
-            </div>
-            <div className={`p-3 rounded-xl border ${isCleared ? "border-emerald-300 bg-emerald-50/70" : "border-amber-300 bg-amber-50/70"}`}>
-              <span className={`text-[10px] block font-bold ${isCleared ? "text-emerald-800" : "text-amber-800"}`}>
-                3. {isCleared ? "ยอดสุทธิที่โอนคู่ค้าแล้ว" : "ยอดสุทธิที่ต้องโอนคู่ค้า"}
-              </span>
-              <span className={`text-base font-black ${isCleared ? "text-emerald-800" : "text-amber-800"}`}>
-                ฿{data.totalRemit.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-              </span>
-              <span className={`text-[10px] font-medium block mt-0.5 ${isCleared ? "text-emerald-700" : "text-amber-700"}`}>
-                {isCleared ? "โอนเงินเรียบร้อยแล้ว" : "ยอดเงินที่ต้องโอนเข้าบัญชี"}
-              </span>
-            </div>
-          </section>
-
-          {/* ตารางแสดงรายการสินค้าย่อย */}
+          {/* 3. ตารางแสดงรายการสินค้าย่อย (Sales Breakdown) */}
           <section className="space-y-1.5">
             <h3 className="text-xs font-bold text-stone-800 uppercase tracking-wider">
-              รายการสินค้าที่จำหน่ายได้ (Sales Breakdown)
+              รายการสินค้าที่จำหน่ายได้ในรอบเดือน
             </h3>
 
             <div className="border border-stone-200 rounded-xl overflow-hidden">
@@ -228,7 +203,7 @@ export default async function BrandSettlementStatementPage({ params, searchParam
                     <th className="py-2 px-2 text-center w-14">จำนวน</th>
                     <th className="py-2 px-3 text-right w-20">ราคาขาย</th>
                     <th className="py-2 px-3 text-right w-24">ยอดขายรวม</th>
-                    <th className="py-2 px-2 text-center w-14">% GP</th>
+                    <th className="py-2 px-3 text-right w-24 text-stone-600">ส่วนแบ่งร้าน (GP)</th>
                     <th className="py-2 px-3 text-right w-24 font-bold text-amber-800">ยอดโอนคืน</th>
                   </tr>
                 </thead>
@@ -252,8 +227,9 @@ export default async function BrandSettlementStatementPage({ params, searchParam
                         <td className="py-1.5 px-2 text-center font-bold">{item.quantity}</td>
                         <td className="py-1.5 px-3 text-right">฿{Number(item.unit_price).toLocaleString()}</td>
                         <td className="py-1.5 px-3 text-right font-medium">฿{Number(item.total_price).toLocaleString()}</td>
-                        <td className="py-1.5 px-2 text-center font-mono text-[10px] text-stone-500">
-                          {Math.round(item.gp_rate * 100)}%
+                        <td className="py-1.5 px-3 text-right text-stone-600">
+                          <div>฿{Number(item.shop_profit).toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
+                          <span className="text-[9px] text-stone-400 font-mono">({Math.round(item.gp_rate * 100)}%)</span>
                         </td>
                         <td className="py-1.5 px-3 text-right font-bold text-amber-800">
                           ฿{Number(item.remit_amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}
@@ -263,13 +239,13 @@ export default async function BrandSettlementStatementPage({ params, searchParam
                   )}
                 </tbody>
                 <tfoot>
-                  <tr className="bg-stone-100/70 border-t border-stone-300 font-black text-stone-900">
-                    <td colSpan={2} className="py-2 px-3 text-right">รวมทั้งสิ้น</td>
-                    <td className="py-2 px-2 text-center">{data.totalQuantity} ชิ้น</td>
+                  <tr className="bg-stone-100/90 border-t-2 border-stone-300 font-black text-stone-900">
+                    <td colSpan={2} className="py-2.5 px-3 text-right">รวมทั้งสิ้น</td>
+                    <td className="py-2.5 px-2 text-center text-stone-800">{data.totalQuantity} ชิ้น</td>
                     <td></td>
-                    <td className="py-2 px-3 text-right">฿{data.totalSales.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                    <td></td>
-                    <td className="py-2 px-3 text-right text-amber-800 text-xs">
+                    <td className="py-2.5 px-3 text-right">฿{data.totalSales.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                    <td className="py-2.5 px-3 text-right text-stone-700">฿{data.totalShopProfit.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                    <td className="py-2.5 px-3 text-right text-amber-800 text-xs">
                       ฿{data.totalRemit.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                     </td>
                   </tr>
@@ -277,34 +253,44 @@ export default async function BrandSettlementStatementPage({ params, searchParam
               </table>
             </div>
           </section>
-        </div>
 
-        {/* Footer หมายเหตุ & ข้อมูลบัญชีร้าน & ช่องลงลายมือชื่อ (กระชับพอดี 1 หน้า A4) */}
-        <footer className="pt-3 border-t border-stone-200 mt-3 space-y-2.5 print:pt-2 print:mt-2 print:space-y-2">
-          {/* หมายเหตุเอกสารการเคลียร์ยอดและโอนเงินคืนคู่ค้า */}
-          <div className="bg-stone-50/90 p-2.5 rounded-xl border border-stone-200/80 flex items-center justify-between gap-4 text-[9.5px] leading-relaxed">
-            <div className="space-y-0.5 text-stone-600">
-              <span className="font-bold text-stone-800 block text-[10px]">
-                📌 หมายเหตุการเคลียร์ยอดขายสินค้าฝากขาย:
-              </span>
+          {/* 4. กล่องสรุปผลตัวเลขทางการเงิน (Financial Summary Card) คำนวณชัดเจน 1 จุด ไม่ซ้ำซ้อน */}
+          <section className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pt-1">
+            {/* หมายเหตุการเคลียร์ยอด */}
+            <div className="text-[10px] text-stone-500 space-y-0.5 max-w-sm">
+              <p className="font-bold text-stone-700">📌 บันทึกข้อกำหนด:</p>
               <p>
-                เอกสารฉบับนี้ออกโดยระบบ <strong>Fur Fur & POS</strong> เพื่อใช้เป็นหลักฐานสรุปยอดจำหน่ายสินค้าฝากขายประจำรอบเดือน และการคำนวณยอดเงินที่ร้าน Fur Fur & โอนชำระคืนให้แก่คู่ค้า ({data.brandGroup})
+                เอกสารนี้สรุปยอดขายสินค้าฝากขายของแบรนด์ <strong>{data.brandGroup}</strong> ประจำรอบ {data.periodText} เพื่อใช้เป็นหลักฐานการโอนชำระเงินคืนสุทธิ
               </p>
             </div>
 
-            <div className="text-right shrink-0">
-              <span className={isCleared ? "inline-block font-bold px-2.5 py-1 rounded-md text-[10px] border bg-emerald-50 text-emerald-800 border-emerald-200" : "inline-block font-bold px-2.5 py-1 rounded-md text-[10px] border bg-amber-50 text-amber-800 border-amber-200"}>
-                {isCleared ? "✓ ร้านโอนเงินคืนเรียบร้อยแล้ว" : "⏳ รอร้านดำเนินการโอนเงินคืน"}
-              </span>
+            {/* บล็อกคำนวณยอดเงินสุทธิ (Math Breakdown) */}
+            <div className="w-full sm:w-72 bg-stone-50 rounded-xl p-3 border border-stone-200/90 space-y-1.5 text-xs">
+              <div className="flex justify-between items-center text-stone-600">
+                <span>ยอดขายสินค้ารวม ({data.totalQuantity} ชิ้น):</span>
+                <span className="font-semibold text-stone-900">฿{data.totalSales.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+              </div>
+              <div className="flex justify-between items-center text-stone-600">
+                <span>หัก ส่วนแบ่งร้าน (GP):</span>
+                <span className="font-semibold text-rose-700">-฿{data.totalShopProfit.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+              </div>
+              <div className="pt-1.5 border-t border-stone-300 flex justify-between items-baseline font-bold">
+                <span className="text-stone-900 font-extrabold text-[11px]">ยอดสุทธิที่โอนคืนคู่ค้า:</span>
+                <span className="text-sm font-black text-amber-800">
+                  ฿{data.totalRemit.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                </span>
+              </div>
             </div>
-          </div>
+          </section>
+        </div>
 
+        {/* 5. Footer ช่องลงลายมือชื่อ (กระชับพอดี 1 หน้า A4) */}
+        <footer className="pt-3 border-t border-stone-200 mt-3 space-y-2.5 print:pt-2 print:mt-2 print:space-y-2">
           <div className="grid grid-cols-2 gap-8 text-center text-xs pt-1">
             {/* ฝั่งผู้จัดการร้าน (ฝังลายเซ็นฟาริ บุญเย็น) */}
             <div className="flex flex-col items-center">
               <p className="text-stone-500 text-[11px] font-medium mb-0.5">ผู้จัดการร้าน (Fur Fur &)</p>
               <div className="relative w-48 flex flex-col items-center">
-                {/* ลายเซ็นฟาริ วางพาดเหนือเส้นบรรทัด */}
                 <div className="h-12 flex items-end justify-center mb-[-6px] z-10">
                   <Image
                     src="/signatures/fari-signature.png"
