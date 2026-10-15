@@ -4,6 +4,12 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Fur Fur & POS",
   description: "ระบบคิดเงินและบริหารร้าน Fur Fur & (เฟอ เฟอ แอนด์)",
+  formatDetection: {
+    telephone: false,
+    date: false,
+    address: false,
+    email: false,
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -25,8 +31,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="th">
+    <html lang="th" suppressHydrationWarning>
       <head>
+        <meta name="format-detection" content="telephone=no, date=no, address=no, email=no" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         {/* eslint-disable-next-line @next/next/no-page-custom-font */}
@@ -35,7 +42,7 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap"
         />
       </head>
-      <body className="bg-stone-100 text-stone-800">
+      <body className="bg-stone-100 text-stone-800" suppressHydrationWarning>
         {children}
       </body>
     </html>

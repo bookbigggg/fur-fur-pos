@@ -114,7 +114,15 @@ export default async function BrandSettlementStatementPage({ params, searchParam
           <span>กลับหน้ารายการ</span>
         </Link>
 
-        <PrintButton statementNumber={data.statementNumber} />
+        <PrintButton
+          statementNumber={data.statementNumber}
+          brandGroup={data.brandGroup}
+          periodKey={data.periodKey || period}
+          totalSales={data.totalSales}
+          totalRemit={data.totalRemit}
+          totalQuantity={data.totalQuantity}
+          status={data.status}
+        />
       </div>
 
       {/* แผ่นกระดาษ A4 (ปรับ padding & spacing ให้พอดี 1 หน้าเมื่อบันทึกเป็น PDF) */}
@@ -134,13 +142,11 @@ export default async function BrandSettlementStatementPage({ params, searchParam
                   <p className="text-[12px] font-bold text-stone-600">{STORE_PROFILE.nameTh}</p>
                 </div>
               </div>
-              <p className="text-[10px] font-bold text-amber-900 mt-1 leading-tight">
-                สาขา: {STORE_PROFILE.branch}
-              </p>
+
               <p className="text-[9px] text-stone-500 leading-tight mt-0.5">
                 {STORE_PROFILE.address}
               </p>
-              <p className="text-[9px] text-stone-500 mt-0.5">
+              <p className="text-[9px] text-stone-500 mt-0.5" suppressHydrationWarning>
                 โทร: {STORE_PROFILE.phone} • LINE: {STORE_PROFILE.lineId}
               </p>
             </div>
@@ -275,32 +281,21 @@ export default async function BrandSettlementStatementPage({ params, searchParam
 
         {/* Footer หมายเหตุ & ข้อมูลบัญชีร้าน & ช่องลงลายมือชื่อ (กระชับพอดี 1 หน้า A4) */}
         <footer className="pt-3 border-t border-stone-200 mt-3 space-y-2.5 print:pt-2 print:mt-2 print:space-y-2">
-          {/* ข้อมูลบัญชีร้าน Fur Fur & และหมายเหตุ */}
+          {/* หมายเหตุเอกสารการเคลียร์ยอดและโอนเงินคืนคู่ค้า */}
           <div className="bg-stone-50/90 p-2.5 rounded-xl border border-stone-200/80 flex items-center justify-between gap-4 text-[9.5px] leading-relaxed">
-            <div className="flex items-center gap-3">
-              {/* QR Image ขนาดกะทัดรัด พร้อมพิมพ์ */}
-              <div className="relative w-12 h-12 bg-white rounded-lg p-1 border border-stone-200 shrink-0 shadow-2xs">
-                <img
-                  src={STORE_PROFILE.bank.qrImageUrl}
-                  alt="QR Code รับชำระเงิน Fur Fur &"
-                  className="w-full h-full object-contain rounded"
-                />
-              </div>
-              <div className="space-y-0.5">
-                <span className="font-bold text-stone-800 block text-[10px]">
-                  🏦 ข้อมูลบัญชีร้าน {STORE_PROFILE.nameTh} ({STORE_PROFILE.name}):
-                </span>
-                <p className="text-stone-700">
-                  {STORE_PROFILE.bank.bankName} • เลขที่บัญชี: <strong className="font-mono text-stone-900 font-bold">{STORE_PROFILE.bank.accountNumber}</strong>
-                </p>
-                <p className="text-stone-500">
-                  ชื่อบัญชี: {STORE_PROFILE.bank.accountName} • สาขา {STORE_PROFILE.branch}
-                </p>
-              </div>
+            <div className="space-y-0.5 text-stone-600">
+              <span className="font-bold text-stone-800 block text-[10px]">
+                📌 หมายเหตุการเคลียร์ยอดขายสินค้าฝากขาย:
+              </span>
+              <p>
+                เอกสารฉบับนี้ออกโดยระบบ <strong>Fur Fur & POS</strong> เพื่อใช้เป็นหลักฐานสรุปยอดจำหน่ายสินค้าฝากขายประจำรอบเดือน และการคำนวณยอดเงินที่ร้าน Fur Fur & โอนชำระคืนให้แก่คู่ค้า ({data.brandGroup})
+              </p>
             </div>
 
-            <div className="text-right text-stone-400 text-[9px] max-w-[220px] hidden sm:block print:block leading-tight">
-              <strong>หมายเหตุ:</strong> เอกสารฉบับนี้ออกโดยระบบ Fur Fur & POS เพื่อใช้เป็นหลักฐานสรุปยอดขายสินค้าฝากขายและยอดโอนชำระคืน
+            <div className="text-right shrink-0">
+              <span className={isCleared ? "inline-block font-bold px-2.5 py-1 rounded-md text-[10px] border bg-emerald-50 text-emerald-800 border-emerald-200" : "inline-block font-bold px-2.5 py-1 rounded-md text-[10px] border bg-amber-50 text-amber-800 border-amber-200"}>
+                {isCleared ? "✓ ร้านโอนเงินคืนเรียบร้อยแล้ว" : "⏳ รอร้านดำเนินการโอนเงินคืน"}
+              </span>
             </div>
           </div>
 
