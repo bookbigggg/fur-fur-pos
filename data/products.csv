@@ -1,0 +1,50 @@
+รหัสสินค้า,ชื่อสินค้า/บริการ,กลุ่ม/เจ้าของ,ราคาขาย,ต้นทุน/ชิ้น,% ส่วนแบ่งร้าน (GP),ยอดเคลียร์จ่าย/คืนทุน
+PRD-001,ผ้าพันคอ good boy,Fur Fur,490.00,184.00,-,184.00
+PRD-002,ผ้าพันคอ fur club,Fur Fur,490.00,184.00,-,184.00
+PRD-003,เสื้อยืด good boy size S,Fur Fur,690.00,275.00,-,275.00
+PRD-004,เสื้อยืด good boy size L,Fur Fur,690.00,343.00,-,343.00
+PRD-005,เสื้อยืด good boy เด็ก,Fur Fur,590.00,280.00,-,280.00
+PRD-006,เสื้อยืด too weird size S,Fur Fur,690.00,305.00,-,305.00
+PRD-007,เสื้อยืด too weird size L,Fur Fur,690.00,373.00,-,373.00
+PRD-008,เสื้อยืด too weird เด็ก,Fur Fur,590.00,280.00,-,280.00
+PRD-009,Dog Potion Fresh Spray,Dog Potion,380.00,266.00,-,380.00
+PRD-010,Dog Potion Lullaby Spray,Dog Potion,380.00,266.00,-,380.00
+PRD-011,Dog Potion Catnip Spray,Dog Potion,420.00,294.00,-,420.00
+PRD-012,Dog Potion Paw Balm,Dog Potion,380.00,266.00,-,380.00
+PRD-013,Dog Potion Tear stain remover,Dog Potion,350.00,245.00,-,350.00
+PRD-014,ที่ปัดขน (IKEA),IKEA,30,19,-,19
+PRD-015,Salt spa (Pet esthe),Pet esthe,100,60,-,60
+PRD-016,HiDREAM Dachshund Backpack (Cocoa Brown),HiDREAM,2590,0,0.3,1813
+PRD-017,HiDREAM Fluffy Cat Harness & Leash,HiDREAM,790,0,0.3,553
+PRD-018,HiDREAM Freedom Start Pet Front Carrier (Grey Gray),HiDREAM,1390,0,0.3,973
+PRD-019,HiDREAM Pet Travel Tote Bag,HiDREAM,1290,0,0.3,903
+PRD-020,HiDREAM First-Class Backpack,HiDREAM,1990,0,0.3,1393
+PRD-021,HiDREAM Freedom Start Pet Backpack,HiDREAM,1990,0,0.3,1393
+PRD-022,HiDREAM Ivory Cove Pet Carrier Bag,HiDREAM,1790,0,0.3,1253
+PRD-023,HiDREAM Single-Shoulder Travel Bag,HiDREAM,790,0,0.3,553
+PRD-024,HiDREAM Leather Cat Harness & Leash,HiDREAM,690,0,0.3,483
+PRD-025,HiDREAM Valley Vest Cat Harness & Leash,HiDREAM,590,0,0.3,413
+PRD-026,HiDREAM Leather Dog Harness & Leash Size S,HiDREAM,990,0,0.3,693
+PRD-027,HiDREAM Leather Dog Harness & Leash Size M,HiDREAM,1090,0,0.3,763
+PRD-028,HiDREAM Active Comfort Harness Size S,HiDREAM,990,0,0.3,693
+PRD-029,HiDREAM Active Comfort Harness Size M,HiDREAM,1050,0,0.3,735
+PRD-030,HiDREAM Active Comfort Harness Size L,HiDREAM,1090,0,0.3,763
+PRD-031,HiDREAM Pet Cooling Neck Band Size M,HiDREAM,390,0,0.3,273
+PRD-032,HiDREAM Pet Cooling Neck Band Size L,HiDREAM,450,0,0.3,315
+PRD-033,PetPal เอี๊ยม Jeans Size S,PetPal,450,0,0.25,337.5
+PRD-034,PetPal เอี๊ยม Jeans Size M,PetPal,470,0,0.25,352.5
+PRD-035,PetPal เอี๊ยม Jeans Size XL/2XL,PetPal,520,0,0.25,390
+PRD-036,PetPal เอี๊ยม เขียว Pistachio Vintage Size S,PetPal,450,0,0.25,337.5
+PRD-037,PetPal เอี๊ยม เขียว Pistachio Vintage Size M,PetPal,470,0,0.25,352.5
+PRD-038,PetPal เอี๊ยม เขียว Pistachio Vintage Size XL/2XL,PetPal,520,0,0.25,390
+PRD-039,PetPal เอี๊ยมม่วง Lavender Size M,PetPal,570,0,0.25,427.5
+PRD-040,PetPal เอี๊ยมม่วง Lavender Size L,PetPal,590,0,0.25,442.5
+PRD-041,PetPal เอี๊ยมม่วง Lavender Size XL/2XL,PetPal,620,0,0.25,465
+PRD-042,PetPal กิ๊บติดขน Princess Ocean,PetPal,89,0,0.25,66.75
+PRD-043,PetPal กิ๊บติดขน Butterfly,PetPal,69,0,0.25,51.75
+PRD-044,PAWLTROL Ceramic Slow Feed Bowl,PAWLTROL,1290,0,0.3,903
+PRD-045,PAWLTROL Silicone Slow Feed Bowl,PAWLTROL,1390,0,0.3,973
+PRD-046,PAWLTROL Pet Sunglasses,PAWLTROL,1590,0,0.3,1113
+PRD-047,Divine ทรายมันสำปะหลัง 6 ลิตร,Divine,179,0,0.3,125.3
+PRD-048,Hopp รถเข็นสัตว์เลี้ยงรุ่น Boxy,Hopp,1690,0,0.3,1183
+PRD-049,Hopp รถเข็น 3IN1 รุ่น Carry,Hopp,3990,0,30%,2793
