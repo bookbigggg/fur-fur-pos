@@ -104,23 +104,51 @@ export async function signInWithEmail(email: string, pass: string): Promise<Auth
 }
 
 /**
- * Quick Preset Login สำหรับ iPad Terminal หน้าร้าน (เลือกสลับสิทธิ์ได้ทันที)
+ * เข้าสู่ระบบหน้าร้านด้วยรหัส PIN (Store Terminal PIN)
+ * - รหัสพนักงาน (Staff PIN): เช่น "1234" (หรือจาก process.env.POS_STAFF_PIN)
+ * - รหัสเจ้าของร้าน (Owner PIN): เช่น "8888" (หรือจาก process.env.POS_OWNER_PIN)
  */
-export async function signInWithPreset(role: UserRole): Promise<AuthResult> {
+export async function signInWithPin(pin: string): Promise<AuthResult> {
   try {
-    const isOwner = role === "owner" || role === "manager";
+    const cleanPin = pin.trim();
+    if (!cleanPin) {
+      return { success: false, error: "กรุณาระบุรหัส PIN 4 หลัก" };
+    }
+
+    const ownerPin = process.env.POS_OWNER_PIN || "8888";
+    const staffPin = process.env.POS_STAFF_PIN || "1234";
+
+    let role: UserRole | null = null;
+    let name = "";
+    let email = "";
+    let id = "";
+
+    if (cleanPin === ownerPin) {
+      role = "owner";
+      id = "pos-owner-001";
+      email = "fari@furfurand.com";
+      name = "ฟาริ บุญเย็น (ผู้จัดการร้าน / เจ้าของ)";
+    } else if (cleanPin === staffPin) {
+      role = "staff";
+      id = "pos-staff-001";
+      email = "staff@furfurand.com";
+      name = "พนักงานหน้าร้าน (แคชเชียร์ / ช่าง)";
+    } else {
+      return { success: false, error: "รหัส PIN ไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง" };
+    }
+
     const session: UserSession = {
-      id: isOwner ? "pos-owner-001" : "pos-staff-001",
-      email: isOwner ? "fari@furfurand.com" : "staff@furfurand.com",
-      name: isOwner ? "ฟาริ บุญเย็น (ผู้จัดการร้าน)" : "พนักงานหน้าร้าน",
-      role: isOwner ? "owner" : "staff",
+      id,
+      email,
+      name,
+      role,
     };
 
     await setSessionCookie(session);
     revalidatePath("/", "layout");
     return { success: true, user: session };
   } catch (err) {
-    console.error("signInWithPreset error:", err);
+    console.error("signInWithPin error:", err);
     return { success: false, error: "ไม่สามารถเข้าสู่ระบบได้" };
   }
 }
