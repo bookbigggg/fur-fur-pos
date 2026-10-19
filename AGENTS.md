@@ -71,3 +71,12 @@ npx tsc --noEmit
 # 2. ตรวจสอบการ Build Production
 npm run build
 ```
+
+---
+
+## 📝 5. การอัปเดต `spec.md` อย่างต่อเนื่อง (Continuous spec.md Maintenance)
+
+* **Living Document:** ไฟล์ `spec.md` คือ Single Source of Truth ของโปรเจกต์
+* **ข้อกำหนดสำหรับ AI Agent ทุกตัว:** ทุกครั้งที่มีการพัฒนาฟีเจอร์ใหม่, ปรับแก้ Business Logic, แก้ไขโครงสร้าง Database, หรือขยับ Milestone/Version จะต้องทำการ **อัปเดตสถานะใน `spec.md` เสมอ**
+* เพื่อให้การเปิด Chat ใหม่ในอนาคต ตัว Agent จะทราบขั้นตอนความคืบหน้าล่าสุดได้ทันทีแบบ 100% โดยไม่ต้องเริ่มบริบทใหม่
+
