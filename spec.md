@@ -1,0 +1,83 @@
+# 🐾 Fur Fur & (เฟอ เฟอ แอนด์) POS — System Specification & Status (`spec.md`)
+
+> **Single Source of Truth** สำหรับ AI Agent และทีมพัฒนาในการตรวจสอบบริบท สถานะปัจจุบัน กฎเหล็กทางธุรกิจ และสถาปัตยกรรมของระบบ
+
+---
+
+## 📍 1. สถานะปัจจุบันของโครงการ (Current Stage & Milestones)
+
+* **สถานะระบบ:** 🟢 **Production Live & Deployed (พร้อมใช้งานจริงหน้าร้าน 100%)**
+* **เวอร์ชันล่าสุด:** `v1.2.0`
+* **GitHub Repository:** [`https://github.com/bookbigggg/fur-fur-pos`](https://github.com/bookbigggg/fur-fur-pos) (Branch: `main`)
+* **Deployment Platform:** Vercel (Auto-deploy ผ่าน GitHub)
+* **ฐานข้อมูล (Database):** Supabase PostgreSQL SSR (Project Ref: `gcybyruqacudlzsvxoll`)
+* **สถานะ Data Migration:** 
+  * นำเข้าข้อมูลจริง 100% จาก Google Sheet Master (`FurFur_Grooming_Master_V2`) เมื่อวันที่ 19-20 ต.ค. 2026
+  * บิลประวัติกรูมมิ่ง: 142 บิล (`GRM-0001` ถึง `GRM-0142`)
+  * บิลประวัติสินค้าปลีก: 16 บิล (`SALE-0001` ถึง `SALE-0016`)
+  * ลูกค้า: 71 ราย (Deduplicate เบอร์โทร & ชื่อแล้ว)
+  * สัตว์เลี้ยง: 87 ตัว (ผูกรหัส `PET-xxxx` และเจ้าของเรียบร้อย)
+  * Master สินค้า: 49 รายการ (พร้อมราคา, GP, ต้นทุน, ยอดโอนคืน)
+  * สมาชิกรายปี: 4 ราย (`MEM-001` ถึง `MEM-004`)
+  * คูปองเงินสด: 1 รายการ (`CP-001` นิโกะ ชิบะ)
+  * รายจ่ายร้าน: 32 รายการ (`EXP-001` ถึง `EXP-032`)
+
+---
+
+## 🏛️ 2. ผู้มีอำนาจและกฎเหล็กธุรกิจ (Core Business Rules & Constraints)
+
+1. **ผู้มีอำนาจและการเงิน (Ownership & Cash Control):**
+   * ผู้ดูแลเงินและร้าน: **คุณบุ๊ค** และ **คุณฟาริ บุญเย็น** (ผู้จัดการร้าน)
+   * เจ้าของร้าน 2 คนดูแลเงินเอง 100% พนักงานทั่วไปไม่มีสิทธิ์แตะต้องเก๊ะเงินสด
+   * เอกสารใบสรุปยอดฝากขาย A4 PDF ต้องระบุลายเซ็นและชื่อ **"ฟาริ บุญเย็น"** เสมอ
+2. **รหัสผ่านเข้าใช้งานระบบหน้าร้าน (PIN Access):**
+   * **เจ้าของร้าน / ผู้จัดการ:** `8888`
+   * **พนักงาน / ช่าง:** `1234`
+3. **มาตรฐานบัญชีคูปองเงินสด (TFRS 15 Accounting):**
+   * เงินสดที่รับล่วงหน้าจากการขายแพ็กเกจคูปอง (เช่น จ่าย 3,000 ได้เครดิต 3,300) ต้องบันทึกเป็น **หนี้สิน (Unearned Revenue)**
+   * การรับรู้รายได้ (Revenue Recognition) จะทยอยรับรู้จริงตามสัดส่วน (Proportional) เมื่อลูกค้านำคูปองมาใช้บริการตัดขน/อาบน้ำ
+4. **ระบบสมาชิกรายปี (Annual Membership 299.-/ปี):**
+   * ให้สิทธิ์ส่วนลด 10% สำหรับค่าบริการกรูมมิ่ง
+   * รองรับ **Smart Early Renewal:** หากลูกค้าต่ออายุสมาชิกล่วงหน้าก่อนหมดอายุ ให้นำ 365 วันไปบวกทบจากวันหมดอายุเดิม ห้ามตัดวันคงเหลือเดิมทิ้ง
+5. **สินค้าฝากขาย & เคลียร์ยอดคู่ค้า (Consignment Settlement):**
+   * หัก GP ร้านตาม % หรือยอดโอนคืนคงที่ที่ตกลงไว้
+   * รอบการเคลียร์ยอดตั้งต้นที่ **"เดือนที่แล้ว"**
+   * ห้ามพิมพ์ใบสรุปยอดสำหรับแบรนด์ที่ไม่มีรายการขายในรอบเดือน
+6. **การบันทึกบิลย้อนหลัง (Backdated Orders):**
+   * ซิงค์ทั้ง `order_date` และเวลา `created_at` (`12:00:00 น.` ของวันนั้น) เพื่อให้รายงานบัญชีประจำเดือนถูกต้อง 100%
+7. **การ Void บิล (ยกเลิกคำสั่งซื้อ):**
+   * คืนเครดิตคูปอง, คืนสต็อกสินค้าฝากขาย, และบันทึก Audit Trail ห้ามลบข้อมูลดิบออกจาก Database
+
+---
+
+## ⚡ 3. สถาปัตยกรรมทางเทคนิค (Tech Stack)
+
+* **Framework:** Next.js 16 (App Router), React 19, TypeScript (Strict Mode)
+* **Styling:** Tailwind CSS v4, Lucide Icons, Custom Print Stylesheet (80mm Thermal Slip & A4 Landscape/Portrait PDF)
+* **Database & Auth:** Supabase PostgreSQL SSR (`@supabase/ssr`), Row-Level Security (RLS)
+* **Sequential Numbering:** Atomic PostgreSQL Sequences (`order_sequences` table) ป้องกัน Race Condition
+* **PWA & Mobile Native-like:** Standalone Display, Viewport-fit cover, iOS 16px font anti-autozoom, Keyboard auto-dismiss
+
+---
+
+## 🗺️ 4. แผนผังหน้าจอและฟีเจอร์ (Site Structure & Routes)
+
+| เส้นทาง (Route) | ฟังก์ชันการทำงานหลัก |
+|---|---|
+| `/pos` | หน้าร้านหลัก: เลือกลูกค้า/สัตว์เลี้ยง, บันทึกบิลกรูมมิ่ง/สินค้าปลีก/คูปอง/สมาชิก, เลือกวันย้อนหลัง |
+| `/orders` | ประวัติบิลคำสั่งซื้อ, Daily Dashboard ยอดขายวันนี้, พิมพ์สลิปความร้อน 80mm, Void บิล |
+| `/settlement` | ระบบเคลียร์ยอดสินค้าฝากขายประจำเดือนตามรอบบัญชี |
+| `/settlement/[brand]` | เอกสารใบสรุปยอดฝากขายขนาด A4 PDF แยกแบรนด์ พร้อมลายเซ็นคุณฟาริ บุญเย็น |
+| `/expenses` | งบกำไร-ขาดทุน (P&L) แบบ Real-time และบันทึกค่าใช้จ่ายดำเนินงานร้าน (OpEx) |
+| `/closing` | ระบบปิดกะ & นับเงินสดประจำวัน (ซ่อน/เปิดได้จากเมนูตั้งค่า ⚙️) |
+
+---
+
+## ✅ 5. แนวทางการพัฒนาและตรวจสอบโค้ด (Coding & Verification Standards)
+
+1. **Next.js 16 Server Actions:** ไฟล์ `"use server"` ต้อง export เฉพาะ `async function` เท่านั้น ห้าม export ค่าคงที่ (constants) ออกจากไฟล์ `"use server"` ให้แยกไว้ที่ `src/lib/`
+2. **Type Safety & Build Verification:** ทุกครั้งก่อน commit หรือส่งมอบงาน ต้องรันผ่าน 100%:
+   ```bash
+   npx tsc --noEmit   # ต้อง 0 errors
+   npm run build      # ต้อง Build สำเร็จ 100%
+   ```
