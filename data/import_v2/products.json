@@ -1,0 +1,492 @@
+[
+  {
+    "product_code": "PRD-001",
+    "name": "ผ้าพันคอ good boy",
+    "brand_group": "Fur Fur",
+    "selling_price": 490.0,
+    "cost_price": 184.0,
+    "gp_rate": 0.0,
+    "remit_amount": 184.0,
+    "is_active": true
+  },
+  {
+    "product_code": "PRD-002",
+    "name": "ผ้าพันคอ fur club",
+    "brand_group": "Fur Fur",
+    "selling_price": 490.0,
+    "cost_price": 184.0,
+    "gp_rate": 0.0,
+    "remit_amount": 184.0,
+    "is_active": true
+  },
+  {
+    "product_code": "PRD-003",
+    "name": "เสื้อยืด good boy size S",
+    "brand_group": "Fur Fur",
+    "selling_price": 690.0,
+    "cost_price": 275.0,
+    "gp_rate": 0.0,
+    "remit_amount": 275.0,
+    "is_active": true
+  },
+  {
+    "product_code": "PRD-004",
+    "name": "เสื้อยืด good boy size L",
+    "brand_group": "Fur Fur",
+    "selling_price": 690.0,
+    "cost_price": 343.0,
+    "gp_rate": 0.0,
+    "remit_amount": 343.0,
+    "is_active": true
+  },
+  {
+    "product_code": "PRD-005",
+    "name": "เสื้อยืด good boy เด็ก",
+    "brand_group": "Fur Fur",
+    "selling_price": 590.0,
+    "cost_price": 280.0,
+    "gp_rate": 0.0,
+    "remit_amount": 280.0,
+    "is_active": true
+  },
+  {
+    "product_code": "PRD-006",
+    "name": "เสื้อยืด too weird size S",
+    "brand_group": "Fur Fur",
+    "selling_price": 690.0,
+    "cost_price": 305.0,
+    "gp_rate": 0.0,
+    "remit_amount": 305.0,
+    "is_active": true
+  },
+  {
+    "product_code": "PRD-007",
+    "name": "เสื้อยืด too weird size L",
+    "brand_group": "Fur Fur",
+    "selling_price": 690.0,
+    "cost_price": 373.0,
+    "gp_rate": 0.0,
+    "remit_amount": 373.0,
+    "is_active": true
+  },
+  {
+    "product_code": "PRD-008",
+    "name": "เสื้อยืด too weird เด็ก",
+    "brand_group": "Fur Fur",
+    "selling_price": 590.0,
+    "cost_price": 280.0,
+    "gp_rate": 0.0,
+    "remit_amount": 280.0,
+    "is_active": true
+  },
+  {
+    "product_code": "PRD-009",
+    "name": "Dog Potion Fresh Spray",
+    "brand_group": "Dog Potion",
+    "selling_price": 380.0,
+    "cost_price": 266.0,
+    "gp_rate": 0.0,
+    "remit_amount": 380.0,
+    "is_active": true
+  },
+  {
+    "product_code": "PRD-010",
+    "name": "Dog Potion Lullaby Spray",
+    "brand_group": "Dog Potion",
+    "selling_price": 380.0,
+    "cost_price": 266.0,
+    "gp_rate": 0.0,
+    "remit_amount": 380.0,
+    "is_active": true
+  },
+  {
+    "product_code": "PRD-011",
+    "name": "Dog Potion Catnip Spray",
+    "brand_group": "Dog Potion",
+    "selling_price": 420.0,
+    "cost_price": 294.0,
+    "gp_rate": 0.0,
+    "remit_amount": 420.0,
+    "is_active": true
+  },
+  {
+    "product_code": "PRD-012",
+    "name": "Dog Potion Paw Balm",
+    "brand_group": "Dog Potion",
+    "selling_price": 380.0,
+    "cost_price": 266.0,
+    "gp_rate": 0.0,
+    "remit_amount": 380.0,
+    "is_active": true
+  },
+  {
+    "product_code": "PRD-013",
+    "name": "Dog Potion Tear stain remover",
+    "brand_group": "Dog Potion",
+    "selling_price": 350.0,
+    "cost_price": 245.0,
+    "gp_rate": 0.0,
+    "remit_amount": 350.0,
+    "is_active": true
+  },
+  {
+    "product_code": "PRD-014",
+    "name": "ที่ปัดขน (IKEA)",
+    "brand_group": "IKEA",
+    "selling_price": 30.0,
+    "cost_price": 19.0,
+    "gp_rate": 0.0,
+    "remit_amount": 19.0,
+    "is_active": true
+  },
+  {
+    "product_code": "PRD-015",
+    "name": "Salt spa (Pet esthe)",
+    "brand_group": "Pet esthe",
+    "selling_price": 100.0,
+    "cost_price": 60.0,
+    "gp_rate": 0.0,
+    "remit_amount": 60.0,
+    "is_active": true
+  },
+  {
+    "product_code": "PRD-016",
+    "name": "HiDREAM Dachshund Backpack (Cocoa Brown)",
+    "brand_group": "HiDREAM",
+    "selling_price": 2590.0,
+    "cost_price": 0.0,
+    "gp_rate": 0.003,
+    "remit_amount": 1813.0,
+    "is_active": true
+  },
+  {
+    "product_code": "PRD-017",
+    "name": "HiDREAM Fluffy Cat Harness & Leash",
+    "brand_group": "HiDREAM",
+    "selling_price": 790.0,
+    "cost_price": 0.0,
+    "gp_rate": 0.003,
+    "remit_amount": 553.0,
+    "is_active": true
+  },
+  {
+    "product_code": "PRD-018",
+    "name": "HiDREAM Freedom Start Pet Front Carrier (Grey Gray)",
+    "brand_group": "HiDREAM",
+    "selling_price": 1390.0,
+    "cost_price": 0.0,
+    "gp_rate": 0.003,
+    "remit_amount": 973.0,
+    "is_active": true
+  },
+  {
+    "product_code": "PRD-019",
+    "name": "HiDREAM Pet Travel Tote Bag",
+    "brand_group": "HiDREAM",
+    "selling_price": 1290.0,
+    "cost_price": 0.0,
+    "gp_rate": 0.003,
+    "remit_amount": 903.0,
+    "is_active": true
+  },
+  {
+    "product_code": "PRD-020",
+    "name": "HiDREAM First-Class Backpack",
+    "brand_group": "HiDREAM",
+    "selling_price": 1990.0,
+    "cost_price": 0.0,
+    "gp_rate": 0.003,
+    "remit_amount": 1393.0,
+    "is_active": true
+  },
+  {
+    "product_code": "PRD-021",
+    "name": "HiDREAM Freedom Start Pet Backpack",
+    "brand_group": "HiDREAM",
+    "selling_price": 1990.0,
+    "cost_price": 0.0,
+    "gp_rate": 0.003,
+    "remit_amount": 1393.0,
+    "is_active": true
+  },
+  {
+    "product_code": "PRD-022",
+    "name": "HiDREAM Ivory Cove Pet Carrier Bag",
+    "brand_group": "HiDREAM",
+    "selling_price": 1790.0,
+    "cost_price": 0.0,
+    "gp_rate": 0.003,
+    "remit_amount": 1253.0,
+    "is_active": true
+  },
+  {
+    "product_code": "PRD-023",
+    "name": "HiDREAM Single-Shoulder Travel Bag",
+    "brand_group": "HiDREAM",
+    "selling_price": 790.0,
+    "cost_price": 0.0,
+    "gp_rate": 0.003,
+    "remit_amount": 553.0,
+    "is_active": true
+  },
+  {
+    "product_code": "PRD-024",
+    "name": "HiDREAM Leather Cat Harness & Leash",
+    "brand_group": "HiDREAM",
+    "selling_price": 690.0,
+    "cost_price": 0.0,
+    "gp_rate": 0.003,
+    "remit_amount": 483.0,
+    "is_active": true
+  },
+  {
+    "product_code": "PRD-025",
+    "name": "HiDREAM Valley Vest Cat Harness & Leash",
+    "brand_group": "HiDREAM",
+    "selling_price": 590.0,
+    "cost_price": 0.0,
+    "gp_rate": 0.003,
+    "remit_amount": 413.0,
+    "is_active": true
+  },
+  {
+    "product_code": "PRD-026",
+    "name": "HiDREAM Leather Dog Harness & Leash Size S",
+    "brand_group": "HiDREAM",
+    "selling_price": 990.0,
+    "cost_price": 0.0,
+    "gp_rate": 0.003,
+    "remit_amount": 693.0,
+    "is_active": true
+  },
+  {
+    "product_code": "PRD-027",
+    "name": "HiDREAM Leather Dog Harness & Leash Size M",
+    "brand_group": "HiDREAM",
+    "selling_price": 1090.0,
+    "cost_price": 0.0,
+    "gp_rate": 0.003,
+    "remit_amount": 763.0,
+    "is_active": true
+  },
+  {
+    "product_code": "PRD-028",
+    "name": "HiDREAM Active Comfort Harness Size S",
+    "brand_group": "HiDREAM",
+    "selling_price": 990.0,
+    "cost_price": 0.0,
+    "gp_rate": 0.003,
+    "remit_amount": 693.0,
+    "is_active": true
+  },
+  {
+    "product_code": "PRD-029",
+    "name": "HiDREAM Active Comfort Harness Size M",
+    "brand_group": "HiDREAM",
+    "selling_price": 1050.0,
+    "cost_price": 0.0,
+    "gp_rate": 0.003,
+    "remit_amount": 735.0,
+    "is_active": true
+  },
+  {
+    "product_code": "PRD-030",
+    "name": "HiDREAM Active Comfort Harness Size L",
+    "brand_group": "HiDREAM",
+    "selling_price": 1090.0,
+    "cost_price": 0.0,
+    "gp_rate": 0.003,
+    "remit_amount": 763.0,
+    "is_active": true
+  },
+  {
+    "product_code": "PRD-031",
+    "name": "HiDREAM Pet Cooling Neck Band Size M",
+    "brand_group": "HiDREAM",
+    "selling_price": 390.0,
+    "cost_price": 0.0,
+    "gp_rate": 0.003,
+    "remit_amount": 273.0,
+    "is_active": true
+  },
+  {
+    "product_code": "PRD-032",
+    "name": "HiDREAM Pet Cooling Neck Band Size L",
+    "brand_group": "HiDREAM",
+    "selling_price": 450.0,
+    "cost_price": 0.0,
+    "gp_rate": 0.003,
+    "remit_amount": 315.0,
+    "is_active": true
+  },
+  {
+    "product_code": "PRD-033",
+    "name": "PetPal เอี๊ยม Jeans Size S",
+    "brand_group": "PetPal",
+    "selling_price": 450.0,
+    "cost_price": 0.0,
+    "gp_rate": 0.0025,
+    "remit_amount": 337.5,
+    "is_active": true
+  },
+  {
+    "product_code": "PRD-034",
+    "name": "PetPal เอี๊ยม Jeans Size M",
+    "brand_group": "PetPal",
+    "selling_price": 470.0,
+    "cost_price": 0.0,
+    "gp_rate": 0.0025,
+    "remit_amount": 352.5,
+    "is_active": true
+  },
+  {
+    "product_code": "PRD-035",
+    "name": "PetPal เอี๊ยม Jeans Size XL/2XL",
+    "brand_group": "PetPal",
+    "selling_price": 520.0,
+    "cost_price": 0.0,
+    "gp_rate": 0.0025,
+    "remit_amount": 390.0,
+    "is_active": true
+  },
+  {
+    "product_code": "PRD-036",
+    "name": "PetPal เอี๊ยม เขียว Pistachio Vintage Size S",
+    "brand_group": "PetPal",
+    "selling_price": 450.0,
+    "cost_price": 0.0,
+    "gp_rate": 0.0025,
+    "remit_amount": 337.5,
+    "is_active": true
+  },
+  {
+    "product_code": "PRD-037",
+    "name": "PetPal เอี๊ยม เขียว Pistachio Vintage Size M",
+    "brand_group": "PetPal",
+    "selling_price": 470.0,
+    "cost_price": 0.0,
+    "gp_rate": 0.0025,
+    "remit_amount": 352.5,
+    "is_active": true
+  },
+  {
+    "product_code": "PRD-038",
+    "name": "PetPal เอี๊ยม เขียว Pistachio Vintage Size XL/2XL",
+    "brand_group": "PetPal",
+    "selling_price": 520.0,
+    "cost_price": 0.0,
+    "gp_rate": 0.0025,
+    "remit_amount": 390.0,
+    "is_active": true
+  },
+  {
+    "product_code": "PRD-039",
+    "name": "PetPal เอี๊ยมม่วง Lavender Size M",
+    "brand_group": "PetPal",
+    "selling_price": 570.0,
+    "cost_price": 0.0,
+    "gp_rate": 0.0025,
+    "remit_amount": 427.5,
+    "is_active": true
+  },
+  {
+    "product_code": "PRD-040",
+    "name": "PetPal เอี๊ยมม่วง Lavender Size L",
+    "brand_group": "PetPal",
+    "selling_price": 590.0,
+    "cost_price": 0.0,
+    "gp_rate": 0.0025,
+    "remit_amount": 442.5,
+    "is_active": true
+  },
+  {
+    "product_code": "PRD-041",
+    "name": "PetPal เอี๊ยมม่วง Lavender Size XL/2XL",
+    "brand_group": "PetPal",
+    "selling_price": 620.0,
+    "cost_price": 0.0,
+    "gp_rate": 0.0025,
+    "remit_amount": 465.0,
+    "is_active": true
+  },
+  {
+    "product_code": "PRD-042",
+    "name": "PetPal กิ๊บติดขน Princess Ocean",
+    "brand_group": "PetPal",
+    "selling_price": 89.0,
+    "cost_price": 0.0,
+    "gp_rate": 0.0025,
+    "remit_amount": 66.75,
+    "is_active": true
+  },
+  {
+    "product_code": "PRD-043",
+    "name": "PetPal กิ๊บติดขน Butterfly",
+    "brand_group": "PetPal",
+    "selling_price": 69.0,
+    "cost_price": 0.0,
+    "gp_rate": 0.0025,
+    "remit_amount": 51.75,
+    "is_active": true
+  },
+  {
+    "product_code": "PRD-044",
+    "name": "PAWLTROL Ceramic Slow Feed Bowl",
+    "brand_group": "PAWLTROL",
+    "selling_price": 1290.0,
+    "cost_price": 0.0,
+    "gp_rate": 0.003,
+    "remit_amount": 903.0,
+    "is_active": true
+  },
+  {
+    "product_code": "PRD-045",
+    "name": "PAWLTROL Silicone Slow Feed Bowl",
+    "brand_group": "PAWLTROL",
+    "selling_price": 1390.0,
+    "cost_price": 0.0,
+    "gp_rate": 0.003,
+    "remit_amount": 973.0,
+    "is_active": true
+  },
+  {
+    "product_code": "PRD-046",
+    "name": "PAWLTROL Pet Sunglasses",
+    "brand_group": "PAWLTROL",
+    "selling_price": 1590.0,
+    "cost_price": 0.0,
+    "gp_rate": 0.003,
+    "remit_amount": 1113.0,
+    "is_active": true
+  },
+  {
+    "product_code": "PRD-047",
+    "name": "Divine ทรายมันสำปะหลัง 6 ลิตร",
+    "brand_group": "Divine",
+    "selling_price": 179.0,
+    "cost_price": 0.0,
+    "gp_rate": 0.003,
+    "remit_amount": 125.3,
+    "is_active": true
+  },
+  {
+    "product_code": "PRD-048",
+    "name": "Hopp รถเข็นสัตว์เลี้ยงรุ่น Boxy",
+    "brand_group": "Hopp",
+    "selling_price": 1690.0,
+    "cost_price": 0.0,
+    "gp_rate": 0.003,
+    "remit_amount": 1183.0,
+    "is_active": true
+  },
+  {
+    "product_code": "PRD-049",
+    "name": "Hopp รถเข็น 3IN1 รุ่น Carry",
+    "brand_group": "Hopp",
+    "selling_price": 3990.0,
+    "cost_price": 0.0,
+    "gp_rate": 0.003,
+    "remit_amount": 2793.0,
+    "is_active": true
+  }
+]

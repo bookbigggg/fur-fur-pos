@@ -1,0 +1,290 @@
+[
+  {
+    "expense_code": "EXP-001",
+    "expense_date": "2026-08-13",
+    "category": "ค่าเช่าและสถานที่",
+    "title": "ค่าเช่าร้าน",
+    "amount": 6966.67,
+    "payment_method": "โอนเงิน/QR",
+    "notes": "รอบเดือนสิงหาคม"
+  },
+  {
+    "expense_code": "EXP-002",
+    "expense_date": "2026-08-13",
+    "category": "ค่าเช่าและสถานที่",
+    "title": "ค่าส่วนกลาง",
+    "amount": 1372.28,
+    "payment_method": "โอนเงิน/QR",
+    "notes": "รอบเดือนสิงหาคม"
+  },
+  {
+    "expense_code": "EXP-003",
+    "expense_date": "2026-08-04",
+    "category": "การตลาด/โฆษณา",
+    "title": "ads FB",
+    "amount": 1190.0,
+    "payment_method": "บัตรเครดิต",
+    "notes": "ยิงแอดโปรโมทร้าน"
+  },
+  {
+    "expense_code": "EXP-004",
+    "expense_date": "2026-08-04",
+    "category": "การตลาด/โฆษณา",
+    "title": "Ads GGmap",
+    "amount": 350.0,
+    "payment_method": "บัตรเครดิต",
+    "notes": "ปักหมุด Google Maps"
+  },
+  {
+    "expense_code": "EXP-005",
+    "expense_date": "2026-08-27",
+    "category": "เงินเดือนและค่าจ้าง",
+    "title": "เงินเดือนฟา",
+    "amount": 5000.0,
+    "payment_method": "โอนเงิน/QR",
+    "notes": "เงินเดือนประจำ"
+  },
+  {
+    "expense_code": "EXP-006",
+    "expense_date": "2026-08-27",
+    "category": "เงินเดือนและค่าจ้าง",
+    "title": "เงินเดือนพี่ส้ม",
+    "amount": 6625.0,
+    "payment_method": "โอนเงิน/QR",
+    "notes": "ฐานเงินเดือนประจำ (ไม่รวมค่าคอม)"
+  },
+  {
+    "expense_code": "EXP-007",
+    "expense_date": "2026-08-29",
+    "category": "ของใช้สิ้นเปลือง",
+    "title": "ของใช้เข้าร้าน",
+    "amount": 375.0,
+    "payment_method": "โอนเงิน/QR",
+    "notes": "ของใช้ทำความสะอาด"
+  },
+  {
+    "expense_code": "EXP-008",
+    "expense_date": "2026-08-29",
+    "category": "จิปาถะ/อื่นๆ",
+    "title": "ค่าใช้จ่ายทั่วไป",
+    "amount": 173.0,
+    "payment_method": "โอนเงิน/QR",
+    "notes": "จิปาถะหน้าร้าน"
+  },
+  {
+    "expense_code": "EXP-009",
+    "expense_date": "2026-09-05",
+    "category": "ค่าเช่าและสถานที่",
+    "title": "ค่าเช่าร้าน",
+    "amount": 11000.0,
+    "payment_method": "โอนเงิน/QR",
+    "notes": "รอบเดือนกันยายน"
+  },
+  {
+    "expense_code": "EXP-010",
+    "expense_date": "2026-09-05",
+    "category": "ค่าเช่าและสถานที่",
+    "title": "ค่าส่วนกลาง",
+    "amount": 2025.0,
+    "payment_method": "โอนเงิน/QR",
+    "notes": "รอบเดือนกันยายน"
+  },
+  {
+    "expense_code": "EXP-011",
+    "expense_date": "2026-09-11",
+    "category": "บำรุงรักษา/อุปกรณ์",
+    "title": "พัดลม",
+    "amount": 483.0,
+    "payment_method": "บัตรเครดิต",
+    "notes": ""
+  },
+  {
+    "expense_code": "EXP-012",
+    "expense_date": "2026-09-13",
+    "category": "ของใช้สิ้นเปลือง",
+    "title": "น้ำยาถูพื้น",
+    "amount": 43.0,
+    "payment_method": "โอนเงิน/QR",
+    "notes": ""
+  },
+  {
+    "expense_code": "EXP-013",
+    "expense_date": "2026-09-13",
+    "category": "เงินเดือนและค่าจ้าง",
+    "title": "เงินเดือนฟา",
+    "amount": 3000.0,
+    "payment_method": "เงินสด",
+    "notes": "ใส่เข้า true money"
+  },
+  {
+    "expense_code": "EXP-014",
+    "expense_date": "2026-09-14",
+    "category": "ของใช้สิ้นเปลือง",
+    "title": "น้ำยาเช็ดหู keniva",
+    "amount": 384.0,
+    "payment_method": "โอนเงิน/QR",
+    "notes": "shopee / 3ขวด"
+  },
+  {
+    "expense_code": "EXP-015",
+    "expense_date": "2026-09-14",
+    "category": "ของใช้สิ้นเปลือง",
+    "title": "BB23 เซรั่ม",
+    "amount": 1014.0,
+    "payment_method": "โอนเงิน/QR",
+    "notes": "เซรั่ม 3ขวด"
+  },
+  {
+    "expense_code": "EXP-016",
+    "expense_date": "2026-09-16",
+    "category": "บำรุงรักษา/อุปกรณ์",
+    "title": "ออดหน้าร้าน",
+    "amount": 154.0,
+    "payment_method": "บัตรเครดิต",
+    "notes": ""
+  },
+  {
+    "expense_code": "b4edad87",
+    "expense_date": "2026-09-22",
+    "category": "เงินเดือนและค่าจ้าง",
+    "title": "เงินเดือนฟา",
+    "amount": 5000.0,
+    "payment_method": "โอนเงิน/QR",
+    "notes": ""
+  },
+  {
+    "expense_code": "316bf7b8",
+    "expense_date": "2026-09-23",
+    "category": "การตลาด/โฆษณา",
+    "title": "สติ้กเกอร์ tuesday",
+    "amount": 50.0,
+    "payment_method": "โอนเงิน/QR",
+    "notes": ""
+  },
+  {
+    "expense_code": "e422265b",
+    "expense_date": "2026-10-01",
+    "category": "ของใช้สิ้นเปลือง",
+    "title": "แชมพู plush puppy",
+    "amount": 1495.0,
+    "payment_method": "บัตรเครดิต",
+    "notes": ""
+  },
+  {
+    "expense_code": "324a62e0",
+    "expense_date": "2026-10-01",
+    "category": "เงินเดือนและค่าจ้าง",
+    "title": "เงินเดือนฟา",
+    "amount": 10000.0,
+    "payment_method": "โอนเงิน/QR",
+    "notes": ""
+  },
+  {
+    "expense_code": "6aa95bf9",
+    "expense_date": "2026-09-30",
+    "category": "เงินเดือนและค่าจ้าง",
+    "title": "เงินเดือนฟา",
+    "amount": 5000.0,
+    "payment_method": "โอนเงิน/QR",
+    "notes": ""
+  },
+  {
+    "expense_code": "05cf0cba",
+    "expense_date": "2026-10-01",
+    "category": "การตลาด/โฆษณา",
+    "title": "พร๊อพฮาโลวีน",
+    "amount": 308.0,
+    "payment_method": "บัตรเครดิต",
+    "notes": ""
+  },
+  {
+    "expense_code": "2c9a98f6",
+    "expense_date": "2026-10-03",
+    "category": "ของใช้สิ้นเปลือง",
+    "title": "ถุงมือยาง",
+    "amount": 150.0,
+    "payment_method": "บัตรเครดิต",
+    "notes": ""
+  },
+  {
+    "expense_code": "79b98c71",
+    "expense_date": "2026-09-30",
+    "category": "สาธารณูปโภค (น้ำ/ไฟ)",
+    "title": "ค่าน้ำ",
+    "amount": 192.6,
+    "payment_method": "โอนเงิน/QR",
+    "notes": "ค่าน้ำเดือนกันยา"
+  },
+  {
+    "expense_code": "1211ade9",
+    "expense_date": "2026-09-30",
+    "category": "สาธารณูปโภค (น้ำ/ไฟ)",
+    "title": "ค่าไฟ",
+    "amount": 3373.18,
+    "payment_method": "โอนเงิน/QR",
+    "notes": "ค่าไฟเดือนกันยา"
+  },
+  {
+    "expense_code": "4fa31f4a",
+    "expense_date": "2026-10-07",
+    "category": "ค่าเช่าและสถานที่",
+    "title": "ค่าเช่า",
+    "amount": 11000.0,
+    "payment_method": "โอนเงิน/QR",
+    "notes": "ค่าเช่าเดือนตุลา"
+  },
+  {
+    "expense_code": "0d5574a8",
+    "expense_date": "2026-10-07",
+    "category": "ค่าเช่าและสถานที่",
+    "title": "ค่าส่วนกลาง",
+    "amount": 2166.75,
+    "payment_method": "โอนเงิน/QR",
+    "notes": "ส่วนกลางตุลา"
+  },
+  {
+    "expense_code": "169fe259",
+    "expense_date": "2026-09-12",
+    "category": "การตลาด/โฆษณา",
+    "title": "31สิงหา-12กันยา",
+    "amount": 1311.67,
+    "payment_method": "บัตรเครดิต",
+    "notes": "true card"
+  },
+  {
+    "expense_code": "5033ab99",
+    "expense_date": "2026-10-13",
+    "category": "บำรุงรักษา/อุปกรณ์",
+    "title": "ผ้าเช็ดตัว",
+    "amount": 238.0,
+    "payment_method": "บัตรเครดิต",
+    "notes": ""
+  },
+  {
+    "expense_code": "ed371524",
+    "expense_date": "2026-10-15",
+    "category": "บำรุงรักษา/อุปกรณ์",
+    "title": "trimmer",
+    "amount": 1792.0,
+    "payment_method": "บัตรเครดิต",
+    "notes": ""
+  },
+  {
+    "expense_code": "0634a961",
+    "expense_date": "2026-10-15",
+    "category": "บำรุงรักษา/อุปกรณ์",
+    "title": "ผ้าเช็ดตัว",
+    "amount": 384.0,
+    "payment_method": "บัตรเครดิต",
+    "notes": ""
+  },
+  {
+    "expense_code": "0e1be321",
+    "expense_date": "2026-10-16",
+    "category": "ของใช้สิ้นเปลือง",
+    "title": "dettol",
+    "amount": 396.0,
+    "payment_method": "บัตรเครดิต",
+    "notes": ""
+  }
+]

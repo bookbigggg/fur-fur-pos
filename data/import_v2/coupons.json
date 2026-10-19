@@ -1,0 +1,14 @@
+[
+  {
+    "coupon_code": "CP-001",
+    "buy_date": "2026-09-16",
+    "pet_name": "นิโกะ(ชิบะ)",
+    "owner_name": "วุฒ /122",
+    "package_value": 3300.0,
+    "paid_amount": 3000.0,
+    "remaining_balance": 2850.0,
+    "status": "ใช้งานได้",
+    "payment_method": "โอนเงิน",
+    "notes": ""
+  }
+]

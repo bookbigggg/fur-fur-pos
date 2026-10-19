@@ -1,0 +1,54 @@
+[
+  {
+    "member_code": "MEM-001",
+    "start_date": "2026-10-03",
+    "expire_date": "2027-10-03",
+    "owner_name": "คุณบอส",
+    "phone": "092-092-9888",
+    "pet_name": "หมูหยอง",
+    "species": "หมา",
+    "breed": "คอร์กี้",
+    "fee": 299.0,
+    "status": "active",
+    "payment_method": "โอนเงิน"
+  },
+  {
+    "member_code": "MEM-002",
+    "start_date": "2026-10-04",
+    "expire_date": "2027-10-04",
+    "owner_name": "พี่ยะ",
+    "phone": null,
+    "pet_name": "บราวนี่",
+    "species": "หมา",
+    "breed": null,
+    "fee": 299.0,
+    "status": "active",
+    "payment_method": "โอนเงิน/QR"
+  },
+  {
+    "member_code": "MEM-003",
+    "start_date": "2026-10-04",
+    "expire_date": "2027-10-04",
+    "owner_name": "บาส",
+    "phone": "081-134-0002",
+    "pet_name": "JJ",
+    "species": "แมว",
+    "breed": "มัชกิ้น",
+    "fee": 299.0,
+    "status": "active",
+    "payment_method": "โอนเงิน"
+  },
+  {
+    "member_code": "MEM-004",
+    "start_date": "2026-10-12",
+    "expire_date": "2027-10-12",
+    "owner_name": "เจน",
+    "phone": "095-820-7191",
+    "pet_name": "ไวท์",
+    "species": "หมา",
+    "breed": "หมาไทย",
+    "fee": 299.0,
+    "status": "active",
+    "payment_method": "โอนเงิน"
+  }
+]
