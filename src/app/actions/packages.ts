@@ -152,6 +152,7 @@ export async function purchaseMembership(input: PurchaseMembershipInput) {
     revalidatePath("/orders");
     revalidatePath("/closing");
     revalidatePath("/expenses");
+    revalidatePath("/coupons");
 
     return {
       success: true,
@@ -253,6 +254,7 @@ export async function purchaseCoupon(input: PurchaseCouponInput) {
     revalidatePath("/orders");
     revalidatePath("/closing");
     revalidatePath("/expenses");
+    revalidatePath("/coupons");
 
     return {
       success: true,

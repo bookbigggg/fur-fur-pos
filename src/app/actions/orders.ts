@@ -485,6 +485,7 @@ export async function voidOrder(input: VoidOrderInput): Promise<VoidOrderResult>
     revalidatePath("/closing");
     revalidatePath("/expenses");
     revalidatePath("/settlement");
+    revalidatePath("/coupons");
 
     return { success: true, orderNumber: order.order_number };
   } catch (err: unknown) {

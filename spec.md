@@ -7,7 +7,7 @@
 ## 📍 1. สถานะปัจจุบันของโครงการ (Current Stage & Milestones)
 
 * **สถานะระบบ:** 🟢 **Production Live & Deployed (พร้อมใช้งานจริงหน้าร้าน 100%)**
-* **เวอร์ชันล่าสุด:** `v1.2.0`
+* **เวอร์ชันล่าสุด:** `v1.3.0`
 * **GitHub Repository:** [`https://github.com/bookbigggg/fur-fur-pos`](https://github.com/bookbigggg/fur-fur-pos) (Branch: `main`)
 * **Deployment Platform:** Vercel (Auto-deploy ผ่าน GitHub)
 * **ฐานข้อมูล (Database):** Supabase PostgreSQL SSR (Project Ref: `gcybyruqacudlzsvxoll`)
@@ -68,6 +68,7 @@
 | `/orders` | ประวัติบิลคำสั่งซื้อ, Daily Dashboard ยอดขายวันนี้, พิมพ์สลิปความร้อน 80mm, Void บิล |
 | `/settlement` | ระบบเคลียร์ยอดสินค้าฝากขายประจำเดือนตามรอบบัญชี |
 | `/settlement/[brand]` | เอกสารใบสรุปยอดฝากขายขนาด A4 PDF แยกแบรนด์ พร้อมลายเซ็นคุณฟาริ บุญเย็น |
+| `/coupons` | ระบบบริหารและสรุปยอดคูปองเงินสด: ดูยอดคงเหลือรายใบ, หนี้สิน TFRS 15, ประวัติการหักชำระและคืนยอด |
 | `/expenses` | งบกำไร-ขาดทุน (P&L) แบบ Real-time และบันทึกค่าใช้จ่ายดำเนินงานร้าน (OpEx) |
 | `/closing` | ระบบปิดกะ & นับเงินสดประจำวัน (ซ่อน/เปิดได้จากเมนูตั้งค่า ⚙️) |
 

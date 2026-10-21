@@ -18,7 +18,8 @@ import {
   Crown,
   UserCheck,
   ShieldAlert,
-  Settings
+  Settings,
+  Ticket
 } from "lucide-react";
 import { getCurrentSession, signOutUser } from "@/app/actions/auth";
 import { UserSession } from "@/types/database";
@@ -55,6 +56,12 @@ const NAV_ITEMS = [
     label: "เคลียร์เงินคู่ค้า",
     desc: "ตัดรอบโอนเงินสินค้าฝากขาย, ใบสรุปยอด PDF",
     icon: Wallet,
+  },
+  {
+    href: "/coupons",
+    label: "สรุปยอดคูปอง",
+    desc: "ตรวจสอบยอดคงเหลือและประวัติการใช้คูปอง",
+    icon: Ticket,
   },
   {
     href: "/expenses",
@@ -107,6 +114,8 @@ export default function Navbar({ subtitle, onRefresh, isRefreshing }: NavbarProp
         return { title: subtitle || "ปิดกะ & นับเงินสด" };
       case "/settlement":
         return { title: subtitle || "เคลียร์เงินคู่ค้า" };
+      case "/coupons":
+        return { title: subtitle || "สรุปยอดคูปอง" };
       case "/expenses":
         return { title: subtitle || "กำไร-ขาดทุน" };
       default:

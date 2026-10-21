@@ -264,6 +264,7 @@ export async function createGroomingOrder(input: CheckoutInput) {
     revalidatePath("/closing");
     revalidatePath("/expenses");
     revalidatePath("/settlement");
+    revalidatePath("/coupons");
 
     return {
       success: true,

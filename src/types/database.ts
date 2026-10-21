@@ -72,6 +72,56 @@ export interface Coupon {
   updated_at: string;
 }
 
+export interface CouponTransaction {
+  id: string;
+  coupon_id: string;
+  order_id?: string | null;
+  transaction_type: CouponTransactionType;
+  amount: number;
+  balance_before?: number | null;
+  balance_after?: number | null;
+  notes?: string | null;
+  created_at: string;
+  order?: {
+    id: string;
+    order_number: string;
+    order_date: string;
+    service_description?: string | null;
+    net_paid: number;
+  } | null;
+}
+
+export interface CouponCustomerInfo {
+  id: string;
+  name: string;
+  phone?: string | null;
+}
+
+export interface CouponPetInfo {
+  id: string;
+  name: string;
+  species: string;
+  breed?: string | null;
+  weight_kg?: number | null;
+  customer?: CouponCustomerInfo | null;
+}
+
+export interface CouponWithDetails extends Coupon {
+  pet?: CouponPetInfo | null;
+  transaction_count?: number;
+}
+
+export interface CouponSummaryKPI {
+  totalCoupons: number;
+  activeCount: number;
+  exhaustedCount: number;
+  totalRemainingCredit: number;
+  totalPaidAmount: number;
+  totalPackageValue: number;
+  totalLiability: number;
+  totalUsedCredit: number;
+}
+
 export type OrderStatus = 'completed' | 'voided' | 'ยกเลิก';
 
 export interface Order {
