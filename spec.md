@@ -7,7 +7,7 @@
 ## 📍 1. สถานะปัจจุบันของโครงการ (Current Stage & Milestones)
 
 * **สถานะระบบ:** 🟢 **Production Live & Deployed (พร้อมใช้งานจริงหน้าร้าน 100%)**
-* **เวอร์ชันล่าสุด:** `v1.3.0`
+* **เวอร์ชันล่าสุด:** `v1.4.0` (เพิ่มระบบจัดการลูกค้าและสัตว์เลี้ยง Customer CRM)
 * **GitHub Repository:** [`https://github.com/bookbigggg/fur-fur-pos`](https://github.com/bookbigggg/fur-fur-pos) (Branch: `main`)
 * **Deployment Platform:** Vercel (Auto-deploy ผ่าน GitHub)
 * **ฐานข้อมูล (Database):** Supabase PostgreSQL SSR (Project Ref: `gcybyruqacudlzsvxoll`)
@@ -65,6 +65,7 @@
 | เส้นทาง (Route) | ฟังก์ชันการทำงานหลัก |
 |---|---|
 | `/pos` | หน้าร้านหลัก: เลือกลูกค้า/สัตว์เลี้ยง, บันทึกบิลกรูมมิ่ง/สินค้าปลีก/คูปอง/สมาชิก, เลือกวันย้อนหลัง |
+| `/customers` | ระบบบริหารลูกค้าและสัตว์เลี้ยง (Customer CRM): ค้นหา/กรอง, จัดการข้อมูลลูกค้า, ข้อมูลสัตว์เลี้ยง, ดูประวัติบิลย้อนหลัง และกดเปิดบิล POS |
 | `/orders` | ประวัติบิลคำสั่งซื้อ, Daily Dashboard ยอดขายวันนี้, พิมพ์สลิปความร้อน 80mm, Void บิล |
 | `/settlement` | ระบบเคลียร์ยอดสินค้าฝากขายประจำเดือนตามรอบบัญชี |
 | `/settlement/[brand]` | เอกสารใบสรุปยอดฝากขายขนาด A4 PDF แยกแบรนด์ พร้อมลายเซ็นคุณฟาริ บุญเย็น |
