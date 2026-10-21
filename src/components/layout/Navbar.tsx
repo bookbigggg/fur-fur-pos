@@ -19,7 +19,8 @@ import {
   UserCheck,
   ShieldAlert,
   Settings,
-  Ticket
+  Ticket,
+  Users
 } from "lucide-react";
 import { getCurrentSession, signOutUser } from "@/app/actions/auth";
 import { UserSession } from "@/types/database";
@@ -38,6 +39,12 @@ const NAV_ITEMS = [
     label: "คิดเงินหน้าร้าน",
     desc: "รับบริการ Grooming, ขายสินค้าปลีก, สมาชิก & คูปอง",
     icon: ShoppingBag,
+  },
+  {
+    href: "/customers",
+    label: "ลูกค้า & สัตว์เลี้ยง",
+    desc: "ฐานข้อมูลลูกค้า, สัตว์เลี้ยง, ประวัติบริการ และสมาชิก",
+    icon: Users,
   },
   {
     href: "/orders",
@@ -59,8 +66,8 @@ const NAV_ITEMS = [
   },
   {
     href: "/coupons",
-    label: "สรุปยอดคูปอง",
-    desc: "ตรวจสอบยอดคงเหลือและประวัติการใช้คูปอง",
+    label: "แพ็กเกจ & สมาชิก",
+    desc: "สรุปยอดคูปองเงินสด และสมาชิกรายปี 299",
     icon: Ticket,
   },
   {
@@ -115,7 +122,7 @@ export default function Navbar({ subtitle, onRefresh, isRefreshing }: NavbarProp
       case "/settlement":
         return { title: subtitle || "เคลียร์เงินคู่ค้า" };
       case "/coupons":
-        return { title: subtitle || "สรุปยอดคูปอง" };
+        return { title: subtitle || "แพ็กเกจ & สมาชิก" };
       case "/expenses":
         return { title: subtitle || "กำไร-ขาดทุน" };
       default:

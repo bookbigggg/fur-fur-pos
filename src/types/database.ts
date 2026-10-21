@@ -31,6 +31,20 @@ export interface Customer {
   updated_at: string;
 }
 
+export interface CustomerWithPets extends Customer {
+  pets: Pet[];
+  orderCount?: number;
+  lastOrderDate?: string | null;
+}
+
+export interface CustomerStatsKPI {
+  totalCustomers: number;
+  totalPets: number;
+  activeMembershipsCount: number;
+  activeCouponsCount: number;
+  totalCouponBalance: number;
+}
+
 export interface Pet {
   id: string;
   customer_id: string;
@@ -70,6 +84,31 @@ export interface Coupon {
   expire_date?: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface MembershipWithDetails extends AnnualMembership {
+  pet?: {
+    id: string;
+    name: string;
+    species: string;
+    breed?: string | null;
+    weight_kg?: number | null;
+    customer?: {
+      id: string;
+      name: string;
+      phone?: string | null;
+    } | null;
+  } | null;
+  computed_status: MembershipStatus;
+  days_remaining: number;
+}
+
+export interface MembershipSummaryKPI {
+  totalMemberships: number;
+  activeCount: number;
+  expiringCount: number;
+  expiredCount: number;
+  totalIncome: number;
 }
 
 export interface CouponTransaction {

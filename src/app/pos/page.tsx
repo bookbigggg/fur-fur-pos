@@ -81,7 +81,9 @@ function getBangkokDate(): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Bangkok" }).format(new Date());
 }
 
-export default function UnifiedPOSPage() {
+function POSContent() {
+  const searchParams = useSearchParams();
+  const initialPetId = searchParams.get("petId");
   const { settings } = useStoreSettings();
   const todayDate = useMemo(() => getBangkokDate(), []);
   const [orderDate, setOrderDate] = useState<string>(getBangkokDate());
@@ -169,6 +171,17 @@ export default function UnifiedPOSPage() {
       },
     ]);
   };
+
+  // เลือกลูกค้า/สัตว์เลี้ยงอัตโนมัติหากมี petId ส่งมาจากหน้ารายชื่อลูกค้า
+  useEffect(() => {
+    if (initialPetId) {
+      getPetById(initialPetId).then((pet) => {
+        if (pet) {
+          handleSelectPrimaryPet(pet);
+        }
+      });
+    }
+  }, [initialPetId]);
 
   // เพิ่มสัตว์เลี้ยงตัวอื่นในบ้านเข้าบิล Grooming
   const handleAddHouseholdPet = (pet: PetSearchResult) => {
@@ -1434,5 +1447,17 @@ export default function UnifiedPOSPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function UnifiedPOSPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-stone-100 flex items-center justify-center">
+        <div className="w-8 h-8 border-3 border-amber-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    }>
+      <POSContent />
+    </Suspense>
   );
 }

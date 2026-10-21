@@ -4,7 +4,10 @@ import { createClient } from "@/lib/supabase/server";
 import { 
   CouponWithDetails, 
   CouponSummaryKPI, 
-  CouponTransaction 
+  CouponTransaction,
+  MembershipWithDetails,
+  MembershipSummaryKPI,
+  AnnualMembership
 } from "@/types/database";
 
 export async function getCouponsSummary(): Promise<{
@@ -181,6 +184,115 @@ export async function getCouponTransactions(couponId: string): Promise<{
       success: false,
       transactions: [],
       error: err instanceof Error ? err.message : "เกิดข้อผิดพลาด",
+    };
+  }
+}
+
+export async function getMembershipsSummary(): Promise<{
+  success: boolean;
+  memberships: MembershipWithDetails[];
+  kpi: MembershipSummaryKPI;
+  error?: string;
+}> {
+  try {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase
+      .from("annual_memberships")
+      .select(`
+        *,
+        pet:pets (
+          id,
+          name,
+          species,
+          breed,
+          weight_kg,
+          customer:customers (
+            id,
+            name,
+            phone
+          )
+        )
+      `)
+      .order("expire_date", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching memberships:", error);
+      return {
+        success: false,
+        memberships: [],
+        kpi: {
+          totalMemberships: 0,
+          activeCount: 0,
+          expiringCount: 0,
+          expiredCount: 0,
+          totalIncome: 0,
+        },
+        error: error.message,
+      };
+    }
+
+    const todayStr = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Bangkok" }).format(new Date());
+    const today = new Date(todayStr);
+
+    let activeCount = 0;
+    let expiringCount = 0;
+    let expiredCount = 0;
+    let totalIncome = 0;
+
+    const rawList = (data as unknown as AnnualMembership[]) || [];
+    const memberships: MembershipWithDetails[] = rawList.map((m) => {
+      const expireDate = new Date(m.expire_date);
+      const diffTime = expireDate.getTime() - today.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      let computed_status: MembershipWithDetails["computed_status"] = "ใช้งานได้";
+      if (diffDays < 0) {
+        computed_status = "หมดอายุ";
+        expiredCount += 1;
+      } else if (diffDays <= 30) {
+        computed_status = "ใกล้หมดอายุ";
+        expiringCount += 1;
+      } else {
+        computed_status = "ใช้งานได้";
+        activeCount += 1;
+      }
+
+      totalIncome += Number(m.fee) || 0;
+
+      return {
+        ...m,
+        computed_status,
+        days_remaining: diffDays,
+      };
+    });
+
+    const kpi: MembershipSummaryKPI = {
+      totalMemberships: memberships.length,
+      activeCount,
+      expiringCount,
+      expiredCount,
+      totalIncome: Number(totalIncome.toFixed(2)),
+    };
+
+    return {
+      success: true,
+      memberships,
+      kpi,
+    };
+  } catch (err: unknown) {
+    console.error("getMembershipsSummary Exception:", err);
+    return {
+      success: false,
+      memberships: [],
+      kpi: {
+        totalMemberships: 0,
+        activeCount: 0,
+        expiringCount: 0,
+        expiredCount: 0,
+        totalIncome: 0,
+      },
+      error: err instanceof Error ? err.message : "เกิดข้อผิดพลาดในการโหลดข้อมูลสมาชิก",
     };
   }
 }
