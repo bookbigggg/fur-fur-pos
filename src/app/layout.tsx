@@ -44,6 +44,10 @@ export default function RootLayout({
     <html lang="th" suppressHydrationWarning>
       <head>
         <meta name="format-detection" content="telephone=no, date=no, address=no, email=no" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=furfur1" />
+        <link rel="apple-touch-icon-precomposed" sizes="180x180" href="/apple-touch-icon-precomposed.png?v=furfur1" />
+        <link rel="icon" type="image/x-icon" href="/favicon.ico?v=furfur1" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png?v=furfur1" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         {/* eslint-disable-next-line @next/next/no-page-custom-font */}
