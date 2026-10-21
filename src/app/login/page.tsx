@@ -123,8 +123,12 @@ export default function LoginPage() {
       <div className="max-w-md w-full space-y-5">
         {/* Header / Logo */}
         <div className="text-center space-y-2">
-          <div className="w-16 h-16 rounded-3xl bg-amber-600 text-white flex items-center justify-center mx-auto shadow-lg shadow-amber-600/20 mb-3">
-            <Scissors className="w-8 h-8 stroke-[2.2]" />
+          <div className="w-20 h-20 rounded-3xl overflow-hidden bg-[#F9D56E] border-2 border-amber-300 shadow-xl shadow-amber-500/20 mx-auto mb-3 flex items-center justify-center">
+            <img
+              src="/icons/icon-512x512.png"
+              alt="Fur Fur & Logo"
+              className="w-full h-full object-cover"
+            />
           </div>
           <h1 className="text-2xl font-black text-stone-900 tracking-tight">
             Fur Fur &

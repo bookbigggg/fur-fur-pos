@@ -83,3 +83,18 @@
    npx tsc --noEmit   # ต้อง 0 errors
    npm run build      # ต้อง Build สำเร็จ 100%
    ```
+
+---
+
+## 🎨 6. แบรนด์และไอคอนระบบ (Branding & Assets)
+
+* **โลโก้และมาสคอตหลัก:** สุนัขชเนาเซอร์ตาโต โผล่จากขอบล่าง (Peeking Pup Concept) สายตามองช้อนขึ้น
+* **สีหลักของแบรนด์ (Primary Palette):**
+  * `Butter Yellow` (`#F9D56E`): สีพื้นหลังไอคอนหลักและสื่อประชาสัมพันธ์
+  * `Amber/Gold Accent` (`#D97706` / `#B45309`): โทนสีเน้น UI ปุ่มและข้อความหัวแบรนด์
+* **PWA & App Icons Asset Setup:**
+  * `public/icons/apple-touch-icon.png` (180x180 px) — ไอคอน Bookmark / Home Screen บน iOS & iPadOS
+  * `public/icons/icon-192x192.png` & `public/icons/icon-512x512.png` — รองรับ Web App Manifest PWA Standalone
+  * `public/favicon.ico` & `src/app/favicon.ico` — Multi-size Favicon บนแท็บเบราว์เซอร์
+  * ติดตั้งไอคอนใหม่ลงใน Header Navbar (`Navbar.tsx`) และหน้าจอ Login (`login/page.tsx`) แทนที่ไอคอนกรรไกรเดิม
+

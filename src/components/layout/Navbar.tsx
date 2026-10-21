@@ -138,8 +138,12 @@ export default function Navbar({ subtitle, onRefresh, isRefreshing }: NavbarProp
         <div className="max-w-xl mx-auto flex items-center justify-between gap-3">
           {/* Brand Left - Eyebrow Brand + Prominent Page Title */}
           <Link href="/pos" className="flex items-center gap-2.5 group min-w-0">
-            <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-700 flex items-center justify-center font-bold border border-amber-200/60 group-hover:bg-amber-500/20 transition-colors shrink-0">
-              <Scissors className="w-4 h-4 text-amber-600" />
+            <div className="w-9 h-9 rounded-xl overflow-hidden bg-[#F9D56E] border border-amber-300 shadow-xs flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+              <img
+                src="/icons/icon-192x192.png"
+                alt="Fur Fur & Logo"
+                className="w-full h-full object-cover"
+              />
             </div>
             <div className="min-w-0">
               <p className="text-[10px] font-bold text-amber-700 tracking-wider uppercase leading-none">FUR FUR &</p>
