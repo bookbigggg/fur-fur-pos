@@ -61,16 +61,29 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ---
 
-## ✅ 4. ขั้นตอนการตรวจสอบโค้ด (Verification Workflow)
+## ✅ 4. ขั้นตอนการตรวจสอบและการส่งมอบงาน (Verification & Auto-Deployment Workflow)
 
-ก่อนส่งมอบงานหรือ Commit โค้ดทุกครั้ง ต้องรันคำสั่งตรวจสอบดังนี้:
+ก่อนส่งมอบงานทุกครั้ง ต้องรันคำสั่งตรวจสอบและ Push ขึ้น Production ทันที:
 ```bash
 # 1. ตรวจสอบ Type Safety ทั้งหมด (ต้อง 0 errors)
 npx tsc --noEmit
 
-# 2. ตรวจสอบการ Build Production
+# 2. ตรวจสอบการ Build Production (ต้องผ่าน 100%)
 npm run build
+
+# 3. อัปเดต spec.md ตามจริง
+
+# 4. Commit และ Push ขึ้น Production ทันทีโดยอัตโนมัติ
+git add .
+git commit -m "..."
+git push origin main
 ```
+
+> [!IMPORTANT]
+> **กฎเหล็กเรื่องการ Push ขึ้น Vercel (Auto-Deployment):**
+> * ตัว AI Agent ต้อง **Commit & Push ขึ้น GitHub (`origin main`) โดยอัตโนมัติทันทีที่เสร็จงาน** เพื่อให้ Vercel Auto-Deploy
+> * **ห้ามทิ้งโค้ดค้างไว้ใน Local หรือรอให้ผู้ใช้มาคอยทวงถามเด็ดขาด**
+> * เมื่อ Push สำเร็จแล้ว จึงค่อยสรุปผลการทำงานและแจ้งเลข Commit ให้ผู้ใช้ทราบในคำตอบสุดท้าย
 
 ---
 
