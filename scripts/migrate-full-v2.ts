@@ -282,6 +282,27 @@ async function main() {
       notes: `เปิดใช้งานคูปอง ${c.coupon_code} (จ่าย ฿${c.paid_amount} ได้มูลค่า ฿${c.package_value})`,
       created_at: createdAt,
     });
+
+    // บันทึกคำสั่งซื้อลง orders เพื่อให้มีหลักฐานบิลและกระแสเงินสด
+    const { customerId } = resolvePetAndCustomer(c.pet_name, c.owner_name, null);
+    await supabase.from("orders").insert({
+      order_number: "CPN-202609-0001",
+      customer_id: customerId,
+      pet_id: petId,
+      order_type: "coupon",
+      coupon_id: newCpn.id,
+      service_description: `ซื้อแพ็กเกจคูปอง (${c.coupon_code}) จ่าย ฿${c.paid_amount.toLocaleString()} เครดิต ฿${c.package_value.toLocaleString()}`,
+      full_price: c.package_value,
+      discount_text: "0%",
+      coupon_deducted: 0,
+      recognized_coupon_income: 0,
+      net_paid: c.paid_amount,
+      staff_commission: 0,
+      shop_net_income: c.paid_amount,
+      payment_method: normalizePaymentMethod(c.payment_method),
+      order_date: c.buy_date || "2026-09-16",
+      created_at: createdAt,
+    });
   }
   console.log(`✅ บันทึกคูปองสำเร็จ: ${couponIdMap.size} รายการ`);
 
@@ -316,6 +337,29 @@ async function main() {
       console.error(`❌ บันทึกสมาชิก ${m.member_code} ไม่สำเร็จ:`, mErr.message);
     } else {
       memCount++;
+
+      // บันทึกคำสั่งซื้อลง orders เพื่อให้เข้างบ P&L และมีหลักฐานบิล
+      const seqStr = String(memCount).padStart(4, "0");
+      const orderNumber = `MEM-202610-${seqStr}`;
+      const { customerId } = resolvePetAndCustomer(m.pet_name, m.owner_name, m.phone);
+
+      await supabase.from("orders").insert({
+        order_number: orderNumber,
+        customer_id: customerId,
+        pet_id: petId,
+        order_type: "membership",
+        service_description: `สมัครสมาชิกรายปี 299 (${m.member_code})`,
+        full_price: 299,
+        discount_text: "0%",
+        coupon_deducted: 0,
+        recognized_coupon_income: 0,
+        net_paid: 299,
+        staff_commission: 0,
+        shop_net_income: 299,
+        payment_method: normalizePaymentMethod(m.payment_method),
+        order_date: m.start_date || "2026-10-01",
+        created_at: createdAt,
+      });
     }
   }
   console.log(`✅ บันทึกสมาชิกรายปีสำเร็จ: ${memCount} ราย`);
