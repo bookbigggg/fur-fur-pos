@@ -37,6 +37,7 @@ export interface OrderSummaryItem extends Order {
 
 export interface OrderDetailResult extends OrderSummaryItem {
   retail_items?: OrderRetailItemSummary[];
+  coupon_remaining_balance?: number | null;
 }
 
 export interface OrdersFilter {
@@ -215,8 +216,37 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetailResult
     const ord = data as unknown as OrderDetailResult;
     if (!ord) return null;
 
+    // ดึงยอดคูปองคงเหลือ (ถ้ามีการใช้คูปอง หรือผูกกับคูปอง)
+    let couponRemainingBalance: number | null = null;
+    const targetCouponId = ord.coupon_id;
+    if (targetCouponId) {
+      const { data: couponData } = await supabase
+        .from("coupons")
+        .select("remaining_balance")
+        .eq("id", targetCouponId)
+        .maybeSingle();
+
+      if (couponData && couponData.remaining_balance !== null && couponData.remaining_balance !== undefined) {
+        couponRemainingBalance = Number(couponData.remaining_balance);
+      }
+    } else if (ord.pet_id && Number(ord.coupon_deducted) > 0) {
+      // Fallback สำหรับบิลเก่าที่อาจไม่ได้ผูก coupon_id ตรงๆ
+      const { data: petCoupon } = await supabase
+        .from("coupons")
+        .select("remaining_balance")
+        .eq("pet_id", ord.pet_id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (petCoupon && petCoupon.remaining_balance !== null && petCoupon.remaining_balance !== undefined) {
+        couponRemainingBalance = Number(petCoupon.remaining_balance);
+      }
+    }
+
     return {
       ...ord,
+      coupon_remaining_balance: couponRemainingBalance,
       isVoided: !isOrderActive(ord),
     };
   } catch (err: unknown) {

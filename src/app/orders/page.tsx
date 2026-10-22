@@ -54,24 +54,109 @@ function getBangkokDate(): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Bangkok" }).format(new Date());
 }
 
-function getOrderDisplayTitle(ord: OrderSummaryItem): string {
+interface OrderCardInfo {
+  title: string;
+  badge?: string;
+  subtitle: string;
+}
+
+function formatCustomerText(cust?: { name: string; phone?: string | null } | null): string {
+  if (!cust?.name) return "";
+  const name = cust.name.startsWith("คุณ") ? cust.name : `คุณ${cust.name}`;
+  return cust.phone ? `${name} (${cust.phone})` : name;
+}
+
+function getOrderCardInfo(ord: OrderSummaryItem): OrderCardInfo {
+  // 1. ตรวจสอบชื่อสัตว์เลี้ยง
+  let petTitle = "";
+  let petBadge = "";
+  let isMultiPet = false;
+
+  // ตรวจสอบกรณี Multi-Pet (บิล Grooming น้องหลายตัวจะมีแพทเทิร์นคั่นด้วย " • [")
+  const rawDesc = ord.service_description?.replace(/^\[VOID:[^\]]+\]\s*/, "").trim() || "";
+  if (rawDesc.includes(" • [") || (rawDesc.startsWith("[") && rawDesc.includes(" • "))) {
+    const parts = rawDesc.split(/\s*•\s*(?=\[)/);
+    const petNames: string[] = [];
+    for (const part of parts) {
+      const match = part.match(/^\[([^\]]+)\]/);
+      if (match && match[1] && match[1] !== "VOID" && !match[1].startsWith("VOID:")) {
+        petNames.push(match[1]);
+      }
+    }
+    if (petNames.length > 1) {
+      isMultiPet = true;
+      petTitle = petNames.map((n) => (n.startsWith("น้อง") ? n : `น้อง${n}`)).join(" & ");
+    }
+  }
+
+  // หากไม่ใช่ Multi-Pet ให้ใช้ข้อมูลสัตว์เลี้ยง ord.pet จากตาราง pets โดยตรง
+  if (!isMultiPet && ord.pet?.name) {
+    petTitle = ord.pet.name.startsWith("น้อง") ? ord.pet.name : `น้อง${ord.pet.name}`;
+    if (ord.pet.species || ord.pet.breed) {
+      petBadge = [ord.pet.species, ord.pet.breed].filter(Boolean).join(" • ");
+    }
+  }
+
+  // 2. ข้อมูลบริการหรือสินค้า
+  let serviceText = "";
   if (ord.order_type === "retail" && ord.retail_items && ord.retail_items.length > 0) {
     const firstItem = ord.retail_items[0];
     if (ord.retail_items.length === 1) {
-      return `${firstItem.product_name} (${firstItem.quantity} ชิ้น)`;
+      serviceText = `${firstItem.product_name} (${firstItem.quantity} ชิ้น)`;
+    } else {
+      serviceText = `${firstItem.product_name} x ${firstItem.quantity} (+ อีก ${ord.retail_items.length - 1} รายการ)`;
     }
-    return `${firstItem.product_name} x ${firstItem.quantity} (+ อีก ${ord.retail_items.length - 1} รายการ)`;
+  } else if (ord.order_type === "membership") {
+    serviceText = "สมัคร/ต่ออายุสมาชิกรายปี 299";
+  } else if (ord.order_type === "coupon") {
+    serviceText = rawDesc || "ซื้อแพ็กเกจคูปอง";
+  } else {
+    // grooming หรือทั่วไป
+    serviceText = rawDesc || "บริการ Grooming";
   }
-  if (ord.order_type === "grooming") {
-    return ord.service_description?.replace(/^\[VOID:[^\]]+\]\s*/, "") || "บริการ Grooming";
+
+  const customerText = formatCustomerText(ord.customer);
+
+  // 3. จัดการ Title (หัวเรื่องใหญ่) & Subtitle (รายละเอียดด้านล่าง)
+  // ข้อกำหนด: หัวเรื่องใหญ่ในหน้ารวมบิล ต้องแสดงชื่อสัตว์เลี้ยงเป็นหลัก (ถ้ามี)
+  let title = "";
+  let badge = petBadge;
+  const subtitleParts: string[] = [];
+
+  if (petTitle) {
+    // กรณีมีชื่อสัตว์เลี้ยง -> ให้แสดงชื่อสัตว์เลี้ยงเป็นหัวเรื่องเด่น
+    title = petTitle;
+    if (serviceText) {
+      subtitleParts.push(serviceText);
+    }
+    if (customerText) {
+      subtitleParts.push(customerText);
+    }
+  } else if (ord.order_type === "retail") {
+    // กรณีสินค้าปลีกที่ไม่มีสัตว์เลี้ยง -> ใช้ชื่อสินค้าเป็นหัวเรื่อง
+    title = serviceText || "สินค้าปลีก";
+    badge = "";
+    subtitleParts.push("สินค้าปลีก");
+    subtitleParts.push(customerText || "ลูกค้าหน้าร้าน (Walk-in)");
+  } else if (customerText) {
+    // กรณีอื่นๆ ที่ไม่มีสัตว์เลี้ยง แต่มีชื่อลูกค้า
+    title = customerText;
+    badge = "";
+    if (serviceText) {
+      subtitleParts.push(serviceText);
+    }
+  } else {
+    // ไม่มีทั้งสัตว์เลี้ยงและลูกค้า
+    title = serviceText || "รายการคำสั่งซื้อ";
+    badge = "";
+    subtitleParts.push("ลูกค้าหน้าร้าน (Walk-in)");
   }
-  if (ord.order_type === "membership") {
-    return ord.service_description?.replace(/^\[VOID:[^\]]+\]\s*/, "") || "สมัคร/ต่ออายุสมาชิกรายปี 299";
-  }
-  if (ord.order_type === "coupon") {
-    return ord.service_description?.replace(/^\[VOID:[^\]]+\]\s*/, "") || "ซื้อแพ็กเกจคูปอง";
-  }
-  return ord.service_description || "รายการคำสั่งซื้อ";
+
+  return {
+    title,
+    badge,
+    subtitle: subtitleParts.join(" • ") || serviceText || "คำสั่งซื้อ",
+  };
 }
 
 export default function OrderHistoryPage() {
@@ -382,7 +467,7 @@ export default function OrderHistoryPage() {
                   ? new Date(ord.created_at).toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" })
                   : "";
                 const isVoided = ord.isVoided;
-                const displayTitle = getOrderDisplayTitle(ord);
+                const cardInfo = getOrderCardInfo(ord);
 
                 return (
                   <div
@@ -393,7 +478,7 @@ export default function OrderHistoryPage() {
                         : "bg-white border-stone-200/90 hover:border-amber-300"
                     }`}
                   >
-                    {/* 1. แถวบนสุด: สิ่งที่มาทำ/ของที่ขายไป (เด่นที่สุด) & ยอดชำระเงิน */}
+                    {/* 1. แถวบนสุด: สิ่งที่มาทำ/ของที่ขายไป & ยอดชำระเงิน */}
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-start gap-2.5 min-w-0 flex-1">
                         {/* Type Icon Badge */}
@@ -405,13 +490,18 @@ export default function OrderHistoryPage() {
                         </div>
 
                         <div className="min-w-0 flex-1">
-                          {/* รายการบริการ หรือ สินค้าที่ขาย (ตัวหนา เด่น ชัดเจนที่สุด) */}
+                          {/* หัวเรื่อง: แสดงชื่อสัตว์เลี้ยงเป็นหลัก (ตัวหนา เด่น ชัดเจน) */}
                           <div className="flex items-center gap-1.5 flex-wrap">
                             <h3 className={`font-black text-sm sm:text-base leading-snug line-clamp-1 ${
                               isVoided ? "line-through text-stone-400" : "text-stone-900"
                             }`}>
-                              {displayTitle}
+                              {cardInfo.title}
                             </h3>
+                            {cardInfo.badge && (
+                              <span className="text-xs text-stone-500 font-normal">
+                                ({cardInfo.badge})
+                              </span>
+                            )}
                             {isVoided && (
                               <span className="inline-flex items-center gap-0.5 text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-rose-100 text-rose-800 border border-rose-300">
                                 <Ban className="w-2.5 h-2.5 text-rose-600" />
@@ -420,51 +510,9 @@ export default function OrderHistoryPage() {
                             )}
                           </div>
 
-                          {/* ข้อมูลสัตว์เลี้ยง / ลูกค้า */}
-                          <p className="text-xs text-stone-600 mt-0.5 truncate">
-                            {(() => {
-                              const multiPetNames = Array.from(
-                                ord.service_description?.matchAll(/\[([^\]]+)\]/g) || []
-                              )
-                                .map((m) => m[1])
-                                .filter((n) => n !== "VOID" && !n.startsWith("VOID:"));
-
-                              if (multiPetNames.length > 1) {
-                                return (
-                                  <span>
-                                    <strong className="text-stone-850 font-bold">
-                                      {multiPetNames.map((n) => `น้อง${n}`).join(" & ")}
-                                    </strong>
-                                    {ord.customer?.name && (
-                                      <span className="text-stone-400"> • {ord.customer.name}</span>
-                                    )}
-                                  </span>
-                                );
-                              }
-
-                              if (ord.pet) {
-                                return (
-                                  <span>
-                                    <strong className="text-stone-850 font-bold">น้อง{ord.pet.name}</strong>
-                                    <span className="text-stone-500"> ({ord.pet.species}{ord.pet.breed ? ` • ${ord.pet.breed}` : ""})</span>
-                                    {ord.customer?.name && (
-                                      <span className="text-stone-400"> • {ord.customer.name}</span>
-                                    )}
-                                  </span>
-                                );
-                              }
-
-                              if (ord.customer?.name) {
-                                return (
-                                  <span>
-                                    <strong className="text-stone-850 font-bold">{ord.customer.name}</strong>
-                                    {ord.customer.phone && <span className="text-stone-500"> ({ord.customer.phone})</span>}
-                                  </span>
-                                );
-                              }
-
-                              return <span className="text-stone-400">ลูกค้าหน้าร้าน (Walk-in)</span>;
-                            })()}
+                          {/* รายละเอียดบริการ / สินค้า และชื่อลูกค้า */}
+                          <p className="text-xs text-stone-600 mt-0.5 truncate" title={cardInfo.subtitle}>
+                            {cardInfo.subtitle}
                           </p>
                         </div>
                       </div>
@@ -606,6 +654,22 @@ export default function OrderHistoryPage() {
                   <span className="text-stone-500">ประเภทบิล:</span>
                   <span className="font-bold text-stone-800">{getTypeInfo(orderToVoid.order_type).label}</span>
                 </div>
+                {orderToVoid.pet?.name && (
+                  <div className="flex justify-between">
+                    <span className="text-stone-500">สัตว์เลี้ยง:</span>
+                    <span className="font-bold text-stone-800">
+                      {orderToVoid.pet.name.startsWith("น้อง") ? orderToVoid.pet.name : `น้อง${orderToVoid.pet.name}`}
+                    </span>
+                  </div>
+                )}
+                {orderToVoid.customer?.name && (
+                  <div className="flex justify-between">
+                    <span className="text-stone-500">ลูกค้า:</span>
+                    <span className="font-bold text-stone-800">
+                      {orderToVoid.customer.name.startsWith("คุณ") ? orderToVoid.customer.name : `คุณ${orderToVoid.customer.name}`}
+                    </span>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span className="text-stone-500">ยอดชำระ:</span>
                   <span className="font-black text-rose-700">฿{Number(orderToVoid.net_paid).toLocaleString()}</span>

@@ -15,28 +15,20 @@ interface ReceiptModalProps {
 }
 
 function generateLineSummary(order: OrderDetailResult): string {
-  const formattedDate = order.created_at
-    ? new Date(order.created_at).toLocaleDateString("th-TH", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      })
-    : order.order_date;
-
   const lines: string[] = [
-    `🐾 สรุปค่าบริการ ${STORE_PROFILE.name} (${STORE_PROFILE.nameTh})`,
-    `━━━━━━━━━━━━━━━━━━━━`,
-    `สาขา: ${STORE_PROFILE.branch}`,
-    `บิลเลขที่: ${order.order_number}`,
-    `วันที่: ${formattedDate}`,
+    `🐾 สรุปค่าบริการ Fur Fur &`,
   ];
 
-  if (order.customer?.name) {
-    lines.push(`ลูกค้า: คุณ${order.customer.name}`);
+  // ชื่อลูกค้าและชื่อสัตว์เลี้ยง
+  const customerName = order.customer?.name ? `คุณ${order.customer.name}` : "";
+  const petName = order.pet?.name ? `น้อง${order.pet.name}` : "";
+  if (customerName && petName) {
+    lines.push(`ลูกค้า: ${customerName} (${petName})`);
+  } else if (customerName) {
+    lines.push(`ลูกค้า: ${customerName}`);
+  } else if (petName) {
+    lines.push(`ลูกค้า: ${petName}`);
   }
-
-  lines.push(`------------------------------------`);
-  lines.push(`รายการ:`);
 
   // Grooming items
   const retailSum = order.retail_items?.reduce((s, i) => s + Number(i.total_price || 0), 0) || 0;
@@ -48,24 +40,27 @@ function generateLineSummary(order: OrderDetailResult): string {
     if (baseGroomingText.includes(" • [")) {
       const parts = baseGroomingText.split(" • ");
       for (const part of parts) {
-        lines.push(` • ${part}`);
+        lines.push(`• ${part}`);
       }
     } else {
-      const petPrefix = order.pet?.name ? `น้อง${order.pet.name}: ` : "";
-      lines.push(` • ${petPrefix}${baseGroomingText || "บริการ Grooming"} ฿${groomingFullPrice.toLocaleString()}`);
+      lines.push(`• ${baseGroomingText || "บริการ Grooming"} ฿${groomingFullPrice.toLocaleString()}`);
     }
   }
 
   // Retail items
   if (order.retail_items && order.retail_items.length > 0) {
     for (const item of order.retail_items) {
-      lines.push(` • ${item.product_name} (${item.quantity} ชิ้น) ฿${Number(item.total_price).toLocaleString()}`);
+      lines.push(`• ${item.product_name} (${item.quantity} ชิ้น) ฿${Number(item.total_price).toLocaleString()}`);
     }
   }
 
-  // Other types
+  // Other types (membership, coupon package, or retail without item details)
   if (order.order_type !== "grooming" && (!order.retail_items || order.retail_items.length === 0)) {
-    lines.push(` • ${order.service_description || "บริการ"} ฿${Number(order.full_price).toLocaleString()}`);
+    if (order.order_type === "coupon") {
+      lines.push(`• ${order.service_description || "ซื้อแพ็กเกจคูปอง"}`);
+    } else {
+      lines.push(`• ${order.service_description || "บริการ"} ฿${Number(order.full_price).toLocaleString()}`);
+    }
   }
 
   // Discount
@@ -75,26 +70,47 @@ function generateLineSummary(order: OrderDetailResult): string {
       Math.round(Number(order.full_price) - (Number(order.net_paid) + Number(order.coupon_deducted || 0)))
     );
     if (discountAmount > 0) {
-      lines.push(`ส่วนลด (${order.discount_text}): -฿${discountAmount.toLocaleString()}`);
+      lines.push(`• ส่วนลด (${order.discount_text}): -฿${discountAmount.toLocaleString()}`);
     }
   }
 
   // Coupon deducted
-  if (Number(order.coupon_deducted) > 0) {
-    lines.push(`หักคูปองเงินสด: -฿${Number(order.coupon_deducted).toLocaleString()}`);
+  const couponDeducted = Number(order.coupon_deducted || 0);
+  if (couponDeducted > 0) {
+    lines.push(`• หักคูปองเงินสด: -฿${couponDeducted.toLocaleString()}`);
   }
 
-  lines.push(`------------------------------------`);
-  lines.push(`ยอดชำระสุทธิ: ฿${Number(order.net_paid).toLocaleString()} บาท`);
-  lines.push(`วิธีชำระเงิน: ${order.payment_method}`);
-  lines.push(`━━━━━━━━━━━━━━━━━━━━`);
-  lines.push(`📌 ช่องทางชำระเงิน:`);
-  lines.push(`${STORE_PROFILE.bank.bankName}`);
-  lines.push(`เลขที่บัญชี: ${STORE_PROFILE.bank.accountNumber}`);
-  lines.push(`ชื่อบัญชี: ${STORE_PROFILE.bank.accountName}`);
-  lines.push(`(สแกน QR Code พร้อมเพย์ หรือโอนเข้าบัญชีร้านได้เลยนะคะ/ครับ)`);
-  lines.push(`━━━━━━━━━━━━━━━━━━━━`);
-  lines.push(`ขอบคุณที่พาน้องๆ มาใช้บริการนะคะ/ครับ ❤🐶🐱`);
+  lines.push(`───────────────`);
+
+  const netPaid = Number(order.net_paid || 0);
+
+  if (netPaid <= 0) {
+    lines.push(`ยอดชำระ: 0 บาท (ตัดคูปองเรียบร้อย)`);
+  } else if (order.payment_method === "เงินสด") {
+    lines.push(`ยอดสุทธิ: ${netPaid.toLocaleString()} บาท (ชำระเงินสดเรียบร้อย)`);
+  } else {
+    lines.push(`ยอดโอนสุทธิ: ${netPaid.toLocaleString()} บาท`);
+  }
+
+  // คูปองคงเหลือ (ถ้ามีการตัดคูปอง หรือมีข้อมูลคูปองคงเหลือ)
+  if (couponDeducted > 0 || (order.coupon_remaining_balance !== null && order.coupon_remaining_balance !== undefined)) {
+    const remaining = order.coupon_remaining_balance !== null && order.coupon_remaining_balance !== undefined
+      ? Number(order.coupon_remaining_balance)
+      : null;
+    if (remaining !== null) {
+      lines.push(`✨ คูปองคงเหลือ: ${remaining.toLocaleString()} บาท`);
+    }
+  }
+
+  // ช่องทางชำระเงิน (แสดงเฉพาะกรณีมียอดต้องโอนเงิน)
+  if (netPaid > 0 && order.payment_method !== "เงินสด") {
+    lines.push(``);
+    lines.push(`ธ.กสิกรไทย: ${STORE_PROFILE.bank.accountNumber}`);
+    lines.push(`ชื่อบัญชี: ${STORE_PROFILE.bank.accountName}`);
+  }
+
+  lines.push(``);
+  lines.push(`ขอบคุณที่พาน้องมาใช้บริการนะคะ ❤🐶🐱`);
 
   return lines.join("\n");
 }
@@ -439,9 +455,17 @@ export default function ReceiptModal({
               )}
 
             {Number(order.coupon_deducted) > 0 && (
-              <div className="flex justify-between text-amber-800 font-medium">
-                <span>หักคูปองเงินสด</span>
-                <span>-฿{Number(order.coupon_deducted).toLocaleString()}</span>
+              <div className="space-y-0.5">
+                <div className="flex justify-between text-amber-800 font-medium">
+                  <span>หักคูปองเงินสด</span>
+                  <span>-฿{Number(order.coupon_deducted).toLocaleString()}</span>
+                </div>
+                {order.coupon_remaining_balance !== null && order.coupon_remaining_balance !== undefined && (
+                  <div className="flex justify-between text-[11px] text-amber-600 font-sans">
+                    <span>(ยอดคูปองคงเหลือ)</span>
+                    <span className="font-bold">฿{Number(order.coupon_remaining_balance).toLocaleString()}</span>
+                  </div>
+                )}
               </div>
             )}
 
@@ -459,77 +483,89 @@ export default function ReceiptModal({
             <span className="font-bold text-stone-800">{order.payment_method}</span>
           </div>
 
-          {/* Official KBank & PromptPay QR Code Section */}
-          <div className="bg-gradient-to-b from-emerald-50/60 to-stone-50 rounded-2xl p-4 border border-emerald-200/80 text-center space-y-3">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-900 text-[10px] font-bold border border-emerald-200/80">
-              <QrCode className="w-3.5 h-3.5 text-emerald-700" />
-              <span>สแกน QR หรือโอนเข้าบัญชีร้าน • {STORE_PROFILE.name}</span>
-            </div>
-
-            {/* Official KBank / PromptPay QR Image */}
-            <div className="relative mx-auto w-44 bg-white rounded-2xl p-2.5 shadow-sm border border-stone-200/80 flex flex-col items-center">
-              <img
-                src={STORE_PROFILE.bank.qrImageUrl}
-                alt="QR Code รับชำระเงิน Fur Fur &"
-                className="w-full h-auto object-contain rounded-xl"
-              />
-            </div>
-
-            {/* ข้อมูลบัญชีธนาคารสำหรับคัดลอก */}
-            <div className="bg-white rounded-xl p-3 border border-stone-200/80 text-left space-y-1.5 font-sans">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold text-emerald-800 flex items-center gap-1">
-                  🏦 {STORE_PROFILE.bank.bankName}
-                </span>
-                <button
-                  type="button"
-                  onClick={async () => {
-                    const ok = await copyToClipboard(STORE_PROFILE.bank.rawAccountNumber);
-                    if (ok) {
-                      setIsCopiedAccount(true);
-                      setTimeout(() => setIsCopiedAccount(false), 2500);
-                    }
-                  }}
-                  className="px-2 py-0.5 rounded-md bg-stone-100 hover:bg-stone-200 text-stone-700 text-[10px] font-bold transition-all active:scale-95 cursor-pointer flex items-center gap-1 shrink-0"
-                  title="คัดลอกเลขบัญชี"
-                >
-                  {isCopiedAccount ? (
-                    <>
-                      <Check className="w-3 h-3 text-emerald-600 stroke-[3]" />
-                      <span className="text-emerald-700">คัดลอกแล้ว</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-3 h-3 text-stone-500" />
-                      <span>คัดลอกเลขบัญชี</span>
-                    </>
-                  )}
-                </button>
+          {/* Official KBank & PromptPay QR Code Section (แสดงเมื่อมียอดต้องโอนชำระ) */}
+          {Number(order.net_paid) > 0 ? (
+            <div className="bg-gradient-to-b from-emerald-50/60 to-stone-50 rounded-2xl p-4 border border-emerald-200/80 text-center space-y-3">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-900 text-[10px] font-bold border border-emerald-200/80">
+                <QrCode className="w-3.5 h-3.5 text-emerald-700" />
+                <span>สแกน QR หรือโอนเข้าบัญชีร้าน • {STORE_PROFILE.name}</span>
               </div>
 
-              <div className="text-xs space-y-0.5">
-                <div className="flex justify-between items-baseline">
-                  <span className="text-stone-500 text-[11px]">เลขที่บัญชี:</span>
-                  <span className="font-mono font-black text-stone-900 tracking-wider">
-                    {STORE_PROFILE.bank.accountNumber}
+              {/* Official KBank / PromptPay QR Image */}
+              <div className="relative mx-auto w-44 bg-white rounded-2xl p-2.5 shadow-sm border border-stone-200/80 flex flex-col items-center">
+                <img
+                  src={STORE_PROFILE.bank.qrImageUrl}
+                  alt="QR Code รับชำระเงิน Fur Fur &"
+                  className="w-full h-auto object-contain rounded-xl"
+                />
+              </div>
+
+              {/* ข้อมูลบัญชีธนาคารสำหรับคัดลอก */}
+              <div className="bg-white rounded-xl p-3 border border-stone-200/80 text-left space-y-1.5 font-sans">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-emerald-800 flex items-center gap-1">
+                    🏦 {STORE_PROFILE.bank.bankName}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const ok = await copyToClipboard(STORE_PROFILE.bank.rawAccountNumber);
+                      if (ok) {
+                        setIsCopiedAccount(true);
+                        setTimeout(() => setIsCopiedAccount(false), 2500);
+                      }
+                    }}
+                    className="px-2 py-0.5 rounded-md bg-stone-100 hover:bg-stone-200 text-stone-700 text-[10px] font-bold transition-all active:scale-95 cursor-pointer flex items-center gap-1 shrink-0"
+                    title="คัดลอกเลขบัญชี"
+                  >
+                    {isCopiedAccount ? (
+                      <>
+                        <Check className="w-3 h-3 text-emerald-600 stroke-[3]" />
+                        <span className="text-emerald-700">คัดลอกแล้ว</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3 h-3 text-stone-500" />
+                        <span>คัดลอกเลขบัญชี</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                <div className="text-xs space-y-0.5">
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-stone-500 text-[11px]">เลขที่บัญชี:</span>
+                    <span className="font-mono font-black text-stone-900 tracking-wider">
+                      {STORE_PROFILE.bank.accountNumber}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-stone-500 text-[11px]">ชื่อบัญชี:</span>
+                    <span className="font-bold text-stone-800">
+                      {STORE_PROFILE.bank.accountName}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-stone-100 flex justify-between items-baseline text-xs font-bold">
+                  <span className="text-stone-600">ยอดที่ต้องชำระ:</span>
+                  <span className="text-sm font-black text-emerald-700">
+                    ฿{Number(order.net_paid).toLocaleString()}
                   </span>
                 </div>
-                <div className="flex justify-between items-baseline">
-                  <span className="text-stone-500 text-[11px]">ชื่อบัญชี:</span>
-                  <span className="font-bold text-stone-800">
-                    {STORE_PROFILE.bank.accountName}
-                  </span>
-                </div>
-              </div>
-
-              <div className="pt-2 border-t border-stone-100 flex justify-between items-baseline text-xs font-bold">
-                <span className="text-stone-600">ยอดที่ต้องชำระ:</span>
-                <span className="text-sm font-black text-emerald-700">
-                  ฿{Number(order.net_paid).toLocaleString()}
-                </span>
               </div>
             </div>
-          </div>
+          ) : (
+            <div className="bg-emerald-50/80 rounded-2xl p-4 border border-emerald-200 text-center space-y-1">
+              <span className="font-sans font-bold text-xs text-emerald-800 flex items-center justify-center gap-1.5">
+                <Check className="w-4 h-4 stroke-[3] text-emerald-600" />
+                ชำระด้วยคูปองเงินสดเรียบร้อยแล้ว
+              </span>
+              <p className="font-sans text-[11px] text-emerald-700">
+                ยอดสุทธิ 0 บาท ไม่ต้องชำระเงินเพิ่มเติมนะคะ
+              </p>
+            </div>
+          )}
 
           {/* ท้ายบิล ข้อความขอบคุณ */}
           <div className="text-center space-y-1 pt-1 font-sans text-[10px] text-stone-500 leading-tight">

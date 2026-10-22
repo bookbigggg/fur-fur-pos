@@ -236,6 +236,11 @@ export async function purchaseCoupon(input: PurchaseCouponInput) {
       return { success: false, error: `บันทึกข้อมูลคูปองไม่สำเร็จ: ${cpnError.message}` };
     }
 
+    // ผูก coupon_id กลับเข้ากับ orders เพื่อให้สามารถดึงยอดคูปองคงเหลือได้ถูกต้อง
+    if (newCoupon?.id) {
+      await supabase.from("orders").update({ coupon_id: newCoupon.id }).eq("id", newOrder.id);
+    }
+
     // บันทึก Log การออกคูปองเริ่มต้นลง coupon_transactions
     if (newCoupon?.id) {
       try {
