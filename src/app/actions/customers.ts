@@ -126,45 +126,96 @@ export async function createQuickCustomerAndPet(
   try {
     const supabase = await createClient();
 
-    if (!input.customerName.trim() || !input.petName.trim()) {
+    const trimmedCustName = input.customerName.trim();
+    const trimmedPetName = input.petName.trim();
+    const trimmedPhone = input.customerPhone?.trim() || null;
+
+    if (!trimmedCustName || !trimmedPetName) {
       return { success: false, error: "กรุณากรอกชื่อลูกค้าและชื่อสัตว์เลี้ยง" };
     }
 
-    const { data: customer, error: custError } = await supabase
-      .from("customers")
-      .insert({
-        name: input.customerName.trim(),
-        phone: input.customerPhone?.trim() || null,
-      })
-      .select()
-      .single();
+    // 1. ตรวจสอบว่ามีลูกค้าเดิมในระบบตามเบอร์โทรหรือไม่ เพื่อป้องกันการสร้างลูกค้าซ้ำซ้อน
+    let customer: { id: string; name: string; phone: string | null } | null = null;
+    let isNewCustomerCreated = false;
 
-    if (custError || !customer) {
-      return { success: false, error: custError?.message || "ไม่สามารถเพิ่มข้อมูลลูกค้าได้" };
+    if (trimmedPhone) {
+      const { data: existingCust } = await supabase
+        .from("customers")
+        .select("id, name, phone")
+        .eq("phone", trimmedPhone)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (existingCust) {
+        customer = existingCust;
+      }
     }
 
-    const petCode = await getNextPetCode(supabase);
+    if (!customer) {
+      const { data: newCust, error: custError } = await supabase
+        .from("customers")
+        .insert({
+          name: trimmedCustName,
+          phone: trimmedPhone,
+        })
+        .select()
+        .single();
 
-    const { data: pet, error: petError } = await supabase
-      .from("pets")
-      .insert({
-        customer_id: customer.id,
-        pet_code: petCode,
-        name: input.petName.trim(),
-        species: input.species || "หมา",
-        breed: input.breed?.trim() || null,
-        weight_kg: input.weightKg || null,
-      })
-      .select()
-      .single();
+      if (custError || !newCust) {
+        return { success: false, error: custError?.message || "ไม่สามารถเพิ่มข้อมูลลูกค้าได้" };
+      }
+      customer = newCust;
+      isNewCustomerCreated = true;
+    }
 
-    if (petError || !pet) {
-      return { success: false, error: petError?.message || "ไม่สามารถเพิ่มข้อมูลสัตว์เลี้ยงได้" };
+    if (!customer) {
+      return { success: false, error: "ไม่สามารถสร้างหรือค้นหาข้อมูลลูกค้าได้" };
+    }
+    const finalCustomer = customer;
+
+    // 2. สร้างข้อมูลสัตว์เลี้ยง พร้อมระบบ Retry ป้องกัน Unique Key ชนกัน
+    let pet = null;
+    let petErrorMsg = "";
+
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const petCode = await getNextPetCode(supabase);
+
+      const { data: newPet, error: petError } = await supabase
+        .from("pets")
+        .insert({
+          customer_id: finalCustomer.id,
+          pet_code: petCode,
+          name: trimmedPetName,
+          species: input.species || "หมา",
+          breed: input.breed?.trim() || null,
+          weight_kg: input.weightKg || null,
+        })
+        .select()
+        .single();
+
+      if (!petError && newPet) {
+        pet = newPet;
+        break;
+      }
+
+      petErrorMsg = petError?.message || "ไม่สามารถเพิ่มข้อมูลสัตว์เลี้ยงได้";
+      if (!petErrorMsg.includes("pets_pet_code_key") && !petErrorMsg.includes("duplicate key")) {
+        break;
+      }
+    }
+
+    if (!pet) {
+      // หากเพิ่งสร้างลูกค้าใหม่แล้วสร้างสัตว์เลี้ยงไม่ผ่าน ให้ลบลูกค้าที่เพิ่งสร้างเพื่อไม่ให้เป็นขยะ
+      if (isNewCustomerCreated) {
+        await supabase.from("customers").delete().eq("id", finalCustomer.id);
+      }
+      return { success: false, error: petErrorMsg || "ไม่สามารถเพิ่มข้อมูลสัตว์เลี้ยงได้" };
     }
 
     const completePet: PetSearchResult = {
       ...pet,
-      customer,
+      customer: finalCustomer,
       active_membership: null,
       active_coupons: [],
     };
@@ -630,16 +681,36 @@ export async function createCustomer(input: CreateCustomerInput): Promise<{
     }
 
     if (input.petName?.trim()) {
-      const petCode = await getNextPetCode(supabase);
-      await supabase.from("pets").insert({
-        customer_id: customer.id,
-        pet_code: petCode,
-        name: input.petName.trim(),
-        species: input.species || "หมา",
-        breed: input.breed?.trim() || null,
-        weight_kg: input.weightKg || null,
-        health_notes: input.healthNotes?.trim() || null,
-      });
+      let petInserted = false;
+      let petErrorMsg = "";
+
+      for (let attempt = 0; attempt < 3; attempt++) {
+        const petCode = await getNextPetCode(supabase);
+        const { error: petErr } = await supabase.from("pets").insert({
+          customer_id: customer.id,
+          pet_code: petCode,
+          name: input.petName.trim(),
+          species: input.species || "หมา",
+          breed: input.breed?.trim() || null,
+          weight_kg: input.weightKg || null,
+          health_notes: input.healthNotes?.trim() || null,
+        });
+
+        if (!petErr) {
+          petInserted = true;
+          break;
+        }
+
+        petErrorMsg = petErr.message;
+        if (!petErrorMsg.includes("pets_pet_code_key") && !petErrorMsg.includes("duplicate key")) {
+          break;
+        }
+      }
+
+      if (!petInserted) {
+        await supabase.from("customers").delete().eq("id", customer.id);
+        return { success: false, error: petErrorMsg || "ไม่สามารถเพิ่มข้อมูลสัตว์เลี้ยงได้" };
+      }
     }
 
     revalidatePath("/customers");
@@ -691,24 +762,39 @@ export async function addPet(input: CreatePetInput): Promise<{
     if (!input.name.trim()) return { success: false, error: "กรุณาระบุชื่อสัตว์เลี้ยง" };
 
     const supabase = await createClient();
-    const petCode = await getNextPetCode(supabase);
+    let pet = null;
+    let petErrorMsg = "";
 
-    const { data: pet, error } = await supabase
-      .from("pets")
-      .insert({
-        customer_id: input.customerId,
-        pet_code: petCode,
-        name: input.name.trim(),
-        species: input.species || "หมา",
-        breed: input.breed?.trim() || null,
-        weight_kg: input.weightKg || null,
-        health_notes: input.healthNotes?.trim() || null,
-      })
-      .select()
-      .single();
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const petCode = await getNextPetCode(supabase);
 
-    if (error || !pet) {
-      return { success: false, error: error?.message || "ไม่สามารถเพิ่มสัตว์เลี้ยงได้" };
+      const { data: newPet, error } = await supabase
+        .from("pets")
+        .insert({
+          customer_id: input.customerId,
+          pet_code: petCode,
+          name: input.name.trim(),
+          species: input.species || "หมา",
+          breed: input.breed?.trim() || null,
+          weight_kg: input.weightKg || null,
+          health_notes: input.healthNotes?.trim() || null,
+        })
+        .select()
+        .single();
+
+      if (!error && newPet) {
+        pet = newPet;
+        break;
+      }
+
+      petErrorMsg = error?.message || "ไม่สามารถเพิ่มสัตว์เลี้ยงได้";
+      if (!petErrorMsg.includes("pets_pet_code_key") && !petErrorMsg.includes("duplicate key")) {
+        break;
+      }
+    }
+
+    if (!pet) {
+      return { success: false, error: petErrorMsg || "ไม่สามารถเพิ่มสัตว์เลี้ยงได้" };
     }
 
     revalidatePath("/customers");
