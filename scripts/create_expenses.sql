@@ -13,6 +13,10 @@ CREATE TABLE IF NOT EXISTS public.expenses (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+-- Ensure created_by column exists if table was already created
+ALTER TABLE IF EXISTS public.expenses 
+ADD COLUMN IF NOT EXISTS created_by TEXT DEFAULT 'ผู้จัดการร้าน';
+
 -- Index on expense_date for monthly reporting
 CREATE INDEX IF NOT EXISTS idx_expenses_date ON public.expenses (expense_date);
 
@@ -26,3 +30,6 @@ CREATE POLICY "Allow all for expenses" ON public.expenses
   TO anon, authenticated
   USING (true)
   WITH CHECK (true);
+
+-- Reload PostgREST schema cache
+NOTIFY pgrst, 'reload schema';

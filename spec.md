@@ -7,7 +7,7 @@
 ## 📍 1. สถานะปัจจุบันของโครงการ (Current Stage & Milestones)
 
 * **สถานะระบบ:** 🟢 **Production Live & Deployed (พร้อมใช้งานจริงหน้าร้าน 100%)**
-* **เวอร์ชันล่าสุด:** `v1.4.2` (แก้ไขบัคเพิ่มลูกค้า/สัตว์เลี้ยงใหม่ Walk-in ไม่ได้จากรหัสสัตว์เลี้ยงซ้ำ ด้วยระบบ Self-Healing Sequences, ตรวจสอบลูกค้าเดิมตามเบอร์โทร และ Automatic Transaction Rollback)
+* **เวอร์ชันล่าสุด:** `v1.4.3` (แก้ไขปัญหาบันทึกรายจ่ายร้าน Expense ล้มเหลวจากคอลัมน์ `created_by` ด้วย Self-Healing Fallback และจัดทำ Migration Script รองรับ Schema Cache)
 * **GitHub Repository:** [`https://github.com/bookbigggg/fur-fur-pos`](https://github.com/bookbigggg/fur-fur-pos) (Branch: `main`)
 * **Deployment Platform:** Vercel (Auto-deploy ผ่าน GitHub)
 * **ฐานข้อมูล (Database):** Supabase PostgreSQL SSR (Project Ref: `gcybyruqacudlzsvxoll`)

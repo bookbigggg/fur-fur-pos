@@ -103,7 +103,17 @@ export async function createExpense(
       return { success: false, error: "จำนวนเงินต้องมากกว่า 0 บาท" };
     }
 
-    const payload = {
+    type ExpenseInsertPayload = {
+      expense_date: string;
+      category: string;
+      amount: number;
+      payment_method: string;
+      title: string;
+      notes: string | null;
+      created_by?: string | null;
+    };
+
+    const payload: ExpenseInsertPayload = {
       expense_date: input.expense_date,
       category: input.category || "จิปาถะ/อื่นๆ",
       amount: input.amount,
@@ -113,11 +123,32 @@ export async function createExpense(
       created_by: session.name,
     };
 
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from("expenses")
       .insert(payload)
       .select()
       .single();
+
+    // กรณีตาราง expenses ใน Supabase ยังไม่มีคอลัมน์ created_by (Self-healing fallback)
+    if (
+      error &&
+      (error.message?.includes("created_by") ||
+        error.code === "PGRST204" ||
+        error.message?.includes("schema cache"))
+    ) {
+      console.warn("Retrying expense insert without created_by:", error.message);
+      const fallbackPayload = { ...payload };
+      delete fallbackPayload.created_by;
+
+      const retryRes = await supabase
+        .from("expenses")
+        .insert(fallbackPayload)
+        .select()
+        .single();
+
+      data = retryRes.data;
+      error = retryRes.error;
+    }
 
     if (error) {
       console.error("Error creating expense:", error);
