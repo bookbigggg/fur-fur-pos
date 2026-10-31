@@ -7,7 +7,6 @@ import {
   FileText, 
   CheckCircle, 
   Clock, 
-  ExternalLink, 
   Printer, 
   ShieldCheck, 
   Calendar, 
@@ -260,8 +259,6 @@ export default function SettlementDashboardPage() {
 
               <Link
                 href={selectedQuickBrand ? `/settlement/${encodeURIComponent(selectedQuickBrand)}?period=${encodeURIComponent(selectedPeriod)}` : "#"}
-                target="_blank"
-                rel="noopener noreferrer"
                 className={`inline-flex items-center justify-center min-h-[44px] gap-1.5 text-xs font-bold px-4 py-2.5 rounded-xl shadow-sm transition-all active:scale-95 whitespace-nowrap ${
                   selectedQuickBrand
                     ? "bg-amber-600 hover:bg-amber-700 text-white shadow-amber-600/20"
@@ -269,8 +266,7 @@ export default function SettlementDashboardPage() {
                 }`}
               >
                 <FileText className="w-3.5 h-3.5" />
-                <span>พิมพ์ PDF</span>
-                <ExternalLink className="w-3 h-3 ml-0.5 opacity-80" />
+                <span>ออกใบสรุป / ส่ง PDF</span>
               </Link>
             </div>
           )}
@@ -353,13 +349,10 @@ export default function SettlementDashboardPage() {
                     <div className="pt-2 border-t border-stone-100 flex items-center justify-between gap-2">
                       <Link
                         href={`/settlement/${encodeURIComponent(brand.brandGroup)}?period=${encodeURIComponent(selectedPeriod)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
                         className="inline-flex items-center min-h-[40px] gap-1.5 text-xs font-bold text-stone-700 hover:text-stone-900 bg-stone-100 hover:bg-stone-200/80 px-3.5 py-2 rounded-xl transition-all active:scale-95"
                       >
                         <FileText className="w-3.5 h-3.5 text-amber-600" />
-                        <span>พิมพ์ใบแจ้งยอด PDF</span>
-                        <ExternalLink className="w-3 h-3 text-stone-400 ml-0.5" />
+                        <span>ออกใบสรุป / ส่ง PDF</span>
                       </Link>
 
                       <button
@@ -435,16 +428,13 @@ export default function SettlementDashboardPage() {
                         </span>
                       </span>
 
-                      {/* ปุ่มเปิดเอกสารสรุปยอด PDF ในแท็บใหม่ */}
+                      {/* ปุ่มเปิดเอกสารสรุปยอดและแชร์ PDF */}
                       <Link
                         href={`/settlement/${encodeURIComponent(brand.brandGroup)}?period=${encodeURIComponent(selectedPeriod)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
                         className="inline-flex items-center gap-1.5 text-xs font-bold text-stone-700 hover:text-stone-900 bg-stone-100 hover:bg-stone-200/80 px-3 py-2 rounded-xl transition-all"
                       >
                         <FileText className="w-3.5 h-3.5 text-amber-600" />
-                        <span>ดูใบสรุปยอด PDF</span>
-                        <ExternalLink className="w-3 h-3 text-stone-400 ml-0.5" />
+                        <span>ดูใบสรุป / ส่ง PDF</span>
                       </Link>
                     </div>
                   </div>

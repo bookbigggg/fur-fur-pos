@@ -7,7 +7,7 @@
 ## 📍 1. สถานะปัจจุบันของโครงการ (Current Stage & Milestones)
 
 * **สถานะระบบ:** 🟢 **Production Live & Deployed (พร้อมใช้งานจริงหน้าร้าน 100%)**
-* **เวอร์ชันล่าสุด:** `v1.4.3` (แก้ไขปัญหาบันทึกรายจ่ายร้าน Expense ล้มเหลวจากคอลัมน์ `created_by` ด้วย Self-Healing Fallback และจัดทำ Migration Script รองรับ Schema Cache)
+* **เวอร์ชันล่าสุด:** `v1.4.4` (ยกระดับระบบใบสรุปยอดฝากขาย `/settlement/[brand]`: รองรับการสร้างไฟล์ `.pdf` แท้และส่งเข้า LINE ได้ทันทีผ่าน Native Web Share API โดยไม่ต้องคัดลอกลิงก์ไปเปิดใน Safari, ปรับข้อความสรุปส่ง LINE โดยตัดลิงก์ภายในระบบออก, ขยายคอลัมน์รายการสินค้าเป็น 41% อ่านง่ายในบรรทัดเดียว และล็อกสัดส่วนหน้ากระดาษ A4 `794x1123px` พร้อมระบบแบ่งหน้าอัตโนมัติป้องกันปัญหาตัดหน้า 2 เพี้ยน)
 * **GitHub Repository:** [`https://github.com/bookbigggg/fur-fur-pos`](https://github.com/bookbigggg/fur-fur-pos) (Branch: `main`)
 * **Deployment Platform:** Vercel (Auto-deploy ผ่าน GitHub)
 * **ฐานข้อมูล (Database):** Supabase PostgreSQL SSR (Project Ref: `gcybyruqacudlzsvxoll`)
