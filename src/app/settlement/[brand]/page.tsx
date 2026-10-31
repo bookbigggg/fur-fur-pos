@@ -208,10 +208,10 @@ export default async function BrandSettlementStatementPage({ params, searchParam
       />
 
       {/* แถบเครื่องมือด้านบน (ซ่อนอัตโนมัติตอนพิมพ์) */}
-      <div className="max-w-[794px] mx-auto mb-3 sm:mb-4 flex flex-wrap items-center justify-between gap-2 no-print">
+      <div className="max-w-[794px] mx-auto mb-3 sm:mb-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 no-print">
         <Link
           href={data.periodKey ? `/settlement?period=${encodeURIComponent(data.periodKey)}` : "/settlement"}
-          className="inline-flex items-center min-h-[42px] gap-1.5 text-xs font-semibold text-stone-700 hover:text-stone-900 bg-white border border-stone-200 px-3 py-2 rounded-xl shadow-2xs transition-all active:scale-95"
+          className="inline-flex items-center justify-center min-h-[42px] gap-1.5 text-xs font-semibold text-stone-700 hover:text-stone-900 bg-white border border-stone-200 px-3.5 py-2 rounded-xl shadow-2xs transition-all active:scale-95 shrink-0"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>กลับหน้ารายการ</span>

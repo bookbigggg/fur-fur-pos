@@ -244,11 +244,11 @@ export default function SettlementDashboardPage() {
               ไม่มีแบรนด์ที่มียอดขายในรอบเดือนนี้ (ไม่ต้องออกเอกสาร)
             </div>
           ) : (
-            <div className="flex items-center gap-2 pt-1">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-1">
               <select
                 value={selectedQuickBrand}
                 onChange={(e) => setSelectedQuickBrand(e.target.value)}
-                className="flex-1 min-h-[44px] bg-white border border-stone-300 rounded-xl px-3 py-2 text-base sm:text-xs font-bold text-stone-800 focus:outline-none focus:ring-2 focus:ring-amber-500/30"
+                className="w-full sm:flex-1 min-h-[44px] bg-white border border-stone-300 rounded-xl px-3 py-2 text-base sm:text-xs font-bold text-stone-800 focus:outline-none focus:ring-2 focus:ring-amber-500/30"
               >
                 {activeBrands.map((b) => (
                   <option key={b} value={b}>
@@ -259,7 +259,7 @@ export default function SettlementDashboardPage() {
 
               <Link
                 href={selectedQuickBrand ? `/settlement/${encodeURIComponent(selectedQuickBrand)}?period=${encodeURIComponent(selectedPeriod)}` : "#"}
-                className={`inline-flex items-center justify-center min-h-[44px] gap-1.5 text-xs font-bold px-4 py-2.5 rounded-xl shadow-sm transition-all active:scale-95 whitespace-nowrap ${
+                className={`inline-flex items-center justify-center min-h-[44px] gap-1.5 text-xs font-bold px-4 py-2.5 rounded-xl shadow-sm transition-all active:scale-95 whitespace-nowrap shrink-0 ${
                   selectedQuickBrand
                     ? "bg-amber-600 hover:bg-amber-700 text-white shadow-amber-600/20"
                     : "bg-stone-200 text-stone-400 pointer-events-none"
