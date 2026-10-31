@@ -241,16 +241,11 @@ export default async function BrandSettlementStatementPage({ params, searchParam
               {/* 1. Header เอกสาร */}
               <header className="border-b border-stone-200 pb-3 flex justify-between items-start gap-4">
                 <div>
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-700 flex items-center justify-center font-bold text-base overflow-hidden border border-amber-200 shrink-0">
-                      <span className="font-black">FF&</span>
-                    </div>
-                    <div>
-                      <h1 className="text-[19px] font-black text-stone-900 leading-tight">
-                        {STORE_PROFILE.name}
-                      </h1>
-                      <p className="text-[12px] font-bold text-stone-600">{STORE_PROFILE.nameTh}</p>
-                    </div>
+                  <div>
+                    <h1 className="text-[19px] font-black text-stone-900 leading-tight">
+                      {STORE_PROFILE.name}
+                    </h1>
+                    <p className="text-[12px] font-bold text-stone-600">{STORE_PROFILE.nameTh}</p>
                   </div>
 
                   <p className="text-[9.5px] text-stone-500 leading-snug mt-1">
