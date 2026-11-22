@@ -23,7 +23,8 @@ import {
   Receipt,
   Copy,
   X,
-  Plus
+  Plus,
+  UserCheck
 } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import { PaymentMethod, Product, Coupon } from "@/types/database";
@@ -126,6 +127,8 @@ function POSContent() {
   const [createdOrderDetail, setCreatedOrderDetail] = useState<OrderDetailResult | null>(null);
   const [isReceiptOpen, setIsReceiptOpen] = useState(false);
   const [isPromoGuideOpen, setIsPromoGuideOpen] = useState(false);
+  const [isWalkInConfirmOpen, setIsWalkInConfirmOpen] = useState(false);
+  const petSelectorRef = useRef<HTMLDivElement | null>(null);
 
   // Quick Bank & QR Preview State
   const [copiedAccountQuick, setCopiedAccountQuick] = useState(false);
@@ -400,13 +403,19 @@ function POSContent() {
     setSuccessNote(null);
     setCreatedOrderDetail(null);
     setIsReceiptOpen(false);
+    setIsWalkInConfirmOpen(false);
     setUseCoupon(false);
     setOrderDate(getBangkokDate());
   };
 
   // ดำเนินการเปิดบิล (รองรับทั้ง Grooming หลายตัว, ขายปลีก, และบิลรวม Grooming+สินค้า)
-  const handleCheckout = () => {
+  const handleCheckout = (allowWalkIn: boolean = false) => {
     setErrorMessage(null);
+
+    if (!hasGrooming && hasRetail && !selectedPet && allowWalkIn !== true) {
+      setIsWalkInConfirmOpen(true);
+      return;
+    }
 
     startTransition(async () => {
       // 1. กรณีมีบริการ Grooming (ไม่ว่าจะมีสินค้าปลีกพ่วงด้วยหรือไม่) -> เปิดบิล Grooming / บิลรวม
@@ -685,7 +694,9 @@ function POSContent() {
         </section>
 
         {/* 2. Pet Selector (แสดงทั้ง Grooming และ Retail ที่ต้องการผูกลูกค้า) */}
-        <PetSelector selectedPet={selectedPet} onSelectPet={handleSelectPrimaryPet} />
+        <div ref={petSelectorRef}>
+          <PetSelector selectedPet={selectedPet} onSelectPet={handleSelectPrimaryPet} />
+        </div>
 
         {/* 3. MODE: Grooming Flow */}
         {activeTab === "grooming" && (
@@ -1347,7 +1358,7 @@ function POSContent() {
 
             <button
               type="button"
-              onClick={handleCheckout}
+              onClick={() => handleCheckout(false)}
               disabled={
                 isPending ||
                 (!hasGrooming && !hasRetail) ||
@@ -1573,6 +1584,64 @@ function POSContent() {
               >
                 รับทราบ
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Retail Unlinked Customer Confirmation Modal */}
+      {isWalkInConfirmOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4"
+          onClick={() => setIsWalkInConfirmOpen(false)}
+        >
+          <div
+            className="bg-white w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl shadow-2xl border border-stone-200 overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="px-5 py-4 border-b border-stone-100 flex items-center justify-between bg-amber-50/70">
+              <div className="flex items-center gap-2">
+                <UserCheck className="w-4 h-4 text-amber-700" />
+                <h3 className="text-sm font-black text-stone-900">ยังไม่ได้เลือกชื่อลูกค้า</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsWalkInConfirmOpen(false)}
+                className="p-1.5 rounded-xl text-stone-400 hover:text-stone-700 hover:bg-white transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="p-5 space-y-3 text-xs text-stone-600">
+              <p className="leading-relaxed">
+                บิลขายปลีก ({cart.length} รายการ •{" "}
+                <span className="font-bold text-stone-900">฿{retailTotal.toLocaleString()}</span>)
+                ยังไม่ได้ผูกชื่อลูกค้า หากเป็นลูกค้าในระบบแนะนำให้เลือกชื่อเพื่อเก็บประวัติซื้อซ้ำครับ
+              </p>
+
+              <div className="flex flex-col gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsWalkInConfirmOpen(false);
+                    petSelectorRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+                  }}
+                  className="w-full min-h-[44px] rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs shadow-xs transition-all cursor-pointer"
+                >
+                  กลับไปเลือกชื่อลูกค้า
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsWalkInConfirmOpen(false);
+                    handleCheckout(true);
+                  }}
+                  className="w-full min-h-[44px] rounded-xl border border-stone-300 bg-white hover:bg-stone-50 text-stone-700 font-bold text-xs transition-all cursor-pointer"
+                >
+                  ขายให้ลูกค้า Walk-in
+                </button>
+              </div>
             </div>
           </div>
         </div>

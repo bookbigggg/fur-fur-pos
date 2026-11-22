@@ -7,7 +7,7 @@
 ## 📍 1. สถานะปัจจุบันของโครงการ (Current Stage & Milestones)
 
 * **สถานะระบบ:** 🟢 **Production Live & Deployed (พร้อมใช้งานจริงหน้าร้าน 100%)**
-* **เวอร์ชันล่าสุด:** `v1.4.10` (หน้า `/customers` เพิ่มระบบรวมลูกค้าซ้ำ `MergeCustomerModal` + Server Action `mergeCustomers` รองรับย้ายประวัติบิล, สัตว์เลี้ยง, สมาชิกรายปี, คูปอง และจับคู่รวมสัตว์เลี้ยงที่ชื่อซ้ำกัน พร้อมตัวกรอง `ข้อมูลไม่ครบ` สำหรับรายชื่อที่ขาดเบอร์โทร, ใช้ชื่อชั่วคราว, หรือยังไม่มีสัตว์เลี้ยง)
+* **เวอร์ชันล่าสุด:** `v1.4.11` (หน้า `/pos` เพิ่มป๊อปอัปถามยืนยันก่อนคิดเงินบิลขายปลีกที่ยังไม่ได้เลือกลูกค้า ให้เลือกได้ทันทีว่าจะกลับไปเลือกชื่อลูกค้าหรือขายให้ลูกค้า Walk-in; ต่อยอดจาก `v1.4.10` ระบบรวมลูกค้าซ้ำและตัวกรอง `ข้อมูลไม่ครบ` ใน `/customers`)
 * **GitHub Repository:** [`https://github.com/bookbigggg/fur-fur-pos`](https://github.com/bookbigggg/fur-fur-pos) (Branch: `main`)
 * **Deployment Platform:** Vercel (Auto-deploy ผ่าน GitHub)
 * **ฐานข้อมูล (Database):** Supabase PostgreSQL SSR (Project Ref: `gcybyruqacudlzsvxoll`)
