@@ -24,8 +24,10 @@ import {
   getExpenses, 
   createExpense, 
   deleteExpense, 
-  getPnLSummary, 
-  PnLSummaryResult 
+  getPnLSummary,
+  getMonthlyTrendAndDaySplit,
+  PnLSummaryResult,
+  MonthlyTrendPoint,
 } from "@/app/actions/expenses";
 import { Expense, ExpenseCategory } from "@/types/database";
 
@@ -52,6 +54,7 @@ export default function ExpensesAndPnLPage() {
   const [selectedMonth, setSelectedMonth] = useState<string>(getCurrentMonth());
   const [activeTab, setActiveTab] = useState<"pnl" | "expenses">("pnl");
   const [pnlSummary, setPnlSummary] = useState<PnLSummaryResult | null>(null);
+  const [monthlyTrend, setMonthlyTrend] = useState<MonthlyTrendPoint[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [isPending, startTransition] = useTransition();
@@ -69,12 +72,14 @@ export default function ExpensesAndPnLPage() {
   // Load Data
   const loadData = useCallback(async (month: string) => {
     setLoading(true);
-    const [pnlData, expData] = await Promise.all([
+    const [pnlData, expData, trendData] = await Promise.all([
       getPnLSummary(month),
       getExpenses(month),
+      getMonthlyTrendAndDaySplit(month, 6),
     ]);
     setPnlSummary(pnlData);
     setExpenses(expData);
+    setMonthlyTrend(trendData);
     setLoading(false);
   }, []);
 
@@ -83,10 +88,15 @@ export default function ExpensesAndPnLPage() {
     let ignore = false;
     const month = getCurrentMonth();
 
-    Promise.all([getPnLSummary(month), getExpenses(month)]).then(([pnlData, expData]) => {
+    Promise.all([
+      getPnLSummary(month),
+      getExpenses(month),
+      getMonthlyTrendAndDaySplit(month, 6),
+    ]).then(([pnlData, expData, trendData]) => {
       if (!ignore) {
         setPnlSummary(pnlData);
         setExpenses(expData);
+        setMonthlyTrend(trendData);
         setLoading(false);
       }
     });
@@ -427,6 +437,125 @@ export default function ExpensesAndPnLPage() {
                 </div>
               )}
             </section>
+
+            {/* ความหนาแน่นคิวกรูมมิ่ง: วันธรรมดา vs วันหยุด */}
+            {(() => {
+              const currentTrend = monthlyTrend.find((m) => m.month === selectedMonth);
+              if (!currentTrend || currentTrend.groomingCount === 0) return null;
+              const weekdayPct = Math.round((currentTrend.weekdayOrders / currentTrend.groomingCount) * 100);
+              const weekendPct = 100 - weekdayPct;
+
+              return (
+                <section className="bg-white rounded-2xl p-4 border border-stone-200/90 shadow-sm space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-bold text-stone-800 uppercase tracking-wider">
+                      สัดส่วนคิวกรูมมิ่ง: จ.–ศ. vs ส.–อา.
+                    </h3>
+                    <span className="text-[11px] font-bold text-stone-500">
+                      เฉลี่ย ฿{currentTrend.avgGroomingTicket.toLocaleString()}/บิล
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <div className="p-3 rounded-xl bg-sky-50/70 border border-sky-200/70 space-y-0.5">
+                      <span className="text-[10px] font-bold text-sky-800 block">วันธรรมดา (จ.–ศ.)</span>
+                      <span className="text-base font-black text-sky-950 block">
+                        {currentTrend.weekdayOrders} บิล ({weekdayPct}%)
+                      </span>
+                      <span className="text-[10px] text-sky-700 block">
+                        เฉลี่ย {currentTrend.weekdayAvgPerDay} บิล/วัน
+                      </span>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-amber-50/70 border border-amber-200/70 space-y-0.5">
+                      <span className="text-[10px] font-bold text-amber-800 block">วันหยุด (ส.–อา.)</span>
+                      <span className="text-base font-black text-amber-950 block">
+                        {currentTrend.weekendOrders} บิล ({weekendPct}%)
+                      </span>
+                      <span className="text-[10px] text-amber-700 block">
+                        เฉลี่ย {currentTrend.weekendAvgPerDay} บิล/วัน
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="w-full h-2 rounded-full overflow-hidden bg-stone-100 flex">
+                    <div className="bg-sky-500 h-full" style={{ width: `${weekdayPct}%` }} />
+                    <div className="bg-amber-500 h-full" style={{ width: `${weekendPct}%` }} />
+                  </div>
+                </section>
+              );
+            })()}
+
+            {/* แนวโน้มผลประกอบการย้อนหลัง */}
+            {(() => {
+              const activeRows = monthlyTrend.filter(
+                (m) => m.groomingCount > 0 || m.totalIncome > 0 || m.totalExpenses > 0 || m.month === selectedMonth
+              );
+              if (activeRows.length === 0) return null;
+
+              return (
+                <section className="bg-white rounded-2xl p-4 border border-stone-200/90 shadow-sm space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-bold text-stone-800 uppercase tracking-wider">
+                      แนวโน้มรายเดือน (เทียบย้อนหลัง)
+                    </h3>
+                    <span className="text-[10px] text-stone-400">
+                      เกณฑ์ TFRS 15
+                    </span>
+                  </div>
+
+                  <div className="overflow-x-auto -mx-1 px-1">
+                    <table className="w-full text-xs border-collapse min-w-[480px]">
+                      <thead>
+                        <tr className="border-b border-stone-200 text-[10px] font-bold text-stone-500 uppercase">
+                          <th className="py-2 text-left">เดือน</th>
+                          <th className="py-2 text-right">บิลกรูมมิ่ง</th>
+                          <th className="py-2 text-right">เฉลี่ย/บิล</th>
+                          <th className="py-2 text-right">รายได้จริง</th>
+                          <th className="py-2 text-right">ค่าใช้จ่าย</th>
+                          <th className="py-2 text-right">กำไรสุทธิ</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-stone-100">
+                        {activeRows.map((row) => {
+                          const isCurrent = row.month === selectedMonth;
+                          return (
+                            <tr
+                              key={row.month}
+                              onClick={() => handleMonthChange(row.month)}
+                              className={`cursor-pointer transition-colors ${
+                                isCurrent ? "bg-amber-50/80 font-bold" : "hover:bg-stone-50"
+                              }`}
+                            >
+                              <td className="py-2.5 text-stone-900 font-mono">
+                                {row.month}
+                              </td>
+                              <td className="py-2.5 text-right text-stone-700">
+                                {row.groomingCount}
+                              </td>
+                              <td className="py-2.5 text-right text-stone-600 font-mono">
+                                ฿{row.avgGroomingTicket.toLocaleString()}
+                              </td>
+                              <td className="py-2.5 text-right text-emerald-800 font-mono">
+                                ฿{Math.round(row.totalIncome).toLocaleString()}
+                              </td>
+                              <td className="py-2.5 text-right text-rose-700 font-mono">
+                                ฿{Math.round(row.totalExpenses).toLocaleString()}
+                              </td>
+                              <td className={`py-2.5 text-right font-mono font-bold ${
+                                row.netProfit >= 0 ? "text-emerald-700" : "text-rose-700"
+                              }`}>
+                                {row.netProfit >= 0 ? "+" : "-"}฿{Math.abs(Math.round(row.netProfit)).toLocaleString()}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+              );
+            })()}
           </div>
         )}
 

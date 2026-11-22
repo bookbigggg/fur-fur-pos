@@ -23,18 +23,23 @@ import {
   Loader2
 } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
-import { CustomerWithPets, CustomerStatsKPI, Pet } from "@/types/database";
+import { CustomerWithPets, CustomerStatsKPI, CustomerSegmentCounts, Pet } from "@/types/database";
 import { getCustomersList, getCustomerStats } from "@/app/actions/customers";
 import { copyToClipboard } from "@/lib/clipboard";
 import CustomerFormModal from "@/components/customers/CustomerFormModal";
 import PetFormModal from "@/components/customers/PetFormModal";
 import CustomerDetailModal from "@/components/customers/CustomerDetailModal";
 
-type FilterType = "all" | "membership" | "coupon" | "dog" | "cat";
-type SortType = "name" | "latest" | "pets_count";
+type FilterType = "all" | "lapsed45" | "upsell" | "membership" | "coupon" | "dog" | "cat";
+type SortType = "name" | "latest" | "visits" | "pets_count";
 
 export default function CustomersPage() {
   const [customers, setCustomers] = useState<CustomerWithPets[]>([]);
+  const [segmentCounts, setSegmentCounts] = useState<CustomerSegmentCounts>({
+    all: 0,
+    lapsed45: 0,
+    upsell: 0,
+  });
   const [stats, setStats] = useState<CustomerStatsKPI>({
     totalCustomers: 0,
     totalPets: 0,
@@ -71,6 +76,9 @@ export default function CustomersPage() {
 
       if (listRes.success) {
         setCustomers(listRes.customers);
+        if (listRes.segmentCounts) {
+          setSegmentCounts(listRes.segmentCounts);
+        }
       }
       setStats(statsRes);
     } catch (err) {
@@ -80,6 +88,13 @@ export default function CustomersPage() {
       setRefreshing(false);
     }
   }, [searchQuery, filter, sort]);
+
+  const handleSelectFilter = (nextFilter: FilterType) => {
+    setFilter(nextFilter);
+    if (nextFilter === "lapsed45" || nextFilter === "upsell") {
+      setSort("visits");
+    }
+  };
 
   useEffect(() => {
     loadData();
@@ -217,6 +232,7 @@ export default function CustomersPage() {
                 >
                   <option value="name">เรียงตามชื่อ ก-ฮ</option>
                   <option value="latest">มาใช้บริการล่าสุด</option>
+                  <option value="visits">มาใช้บริการบ่อยสุด</option>
                   <option value="pets_count">สัตว์เลี้ยงมากสุด</option>
                 </select>
               </div>
@@ -236,18 +252,42 @@ export default function CustomersPage() {
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-xs">
             <button
               type="button"
-              onClick={() => setFilter("all")}
+              onClick={() => handleSelectFilter("all")}
               className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer whitespace-nowrap ${
                 filter === "all"
                   ? "bg-stone-900 text-white shadow-xs"
                   : "bg-stone-100 text-stone-600 hover:bg-stone-200"
               }`}
             >
-              ทั้งหมด ({customers.length})
+              ทั้งหมด ({segmentCounts.all || customers.length})
             </button>
             <button
               type="button"
-              onClick={() => setFilter("membership")}
+              onClick={() => handleSelectFilter("lapsed45")}
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1 ${
+                filter === "lapsed45"
+                  ? "bg-rose-600 text-white shadow-xs"
+                  : "bg-rose-50 text-rose-800 hover:bg-rose-100 border border-rose-200/70"
+              }`}
+            >
+              <Calendar className="w-3.5 h-3.5" />
+              <span>หายไป 45+ วัน ({segmentCounts.lapsed45})</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSelectFilter("upsell")}
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1 ${
+                filter === "upsell"
+                  ? "bg-sky-600 text-white shadow-xs"
+                  : "bg-sky-50 text-sky-800 hover:bg-sky-100 border border-sky-200/70"
+              }`}
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>ขาประจำยังไม่เป็นสมาชิก ({segmentCounts.upsell})</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSelectFilter("membership")}
               className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1 ${
                 filter === "membership"
                   ? "bg-amber-600 text-white shadow-xs"
@@ -259,7 +299,7 @@ export default function CustomersPage() {
             </button>
             <button
               type="button"
-              onClick={() => setFilter("coupon")}
+              onClick={() => handleSelectFilter("coupon")}
               className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1 ${
                 filter === "coupon"
                   ? "bg-emerald-600 text-white shadow-xs"
@@ -271,7 +311,7 @@ export default function CustomersPage() {
             </button>
             <button
               type="button"
-              onClick={() => setFilter("dog")}
+              onClick={() => handleSelectFilter("dog")}
               className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1 ${
                 filter === "dog"
                   ? "bg-stone-900 text-white shadow-xs"
@@ -283,7 +323,7 @@ export default function CustomersPage() {
             </button>
             <button
               type="button"
-              onClick={() => setFilter("cat")}
+              onClick={() => handleSelectFilter("cat")}
               className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1 ${
                 filter === "cat"
                   ? "bg-stone-900 text-white shadow-xs"
@@ -294,6 +334,21 @@ export default function CustomersPage() {
               <span>น้องแมว</span>
             </button>
           </div>
+
+          {(filter === "lapsed45" || filter === "upsell") && (
+            <div className={`px-3 py-2 rounded-xl text-xs border flex items-center gap-2 ${
+              filter === "lapsed45"
+                ? "bg-rose-50/70 border-rose-200 text-rose-900"
+                : "bg-sky-50/70 border-sky-200 text-sky-900"
+            }`}>
+              <AlertTriangle className="w-4 h-4 shrink-0" />
+              <span>
+                {filter === "lapsed45"
+                  ? "กลุ่มลูกค้าที่ไม่ได้มากรูมมิ่งเกิน 45 วัน (ตัด Walk in ออกแล้ว) เรียงตามคนที่เคยมาบ่อยขึ้นก่อน เพื่อคัดลอกเบอร์หรือทัก LINE ชวนกลับมาอาบน้ำ"
+                  : "ลูกค้าที่เคยมากรูมมิ่ง 3 ครั้งขึ้นไป แต่ยังไม่มีสมาชิกรายปี 299 หรือคูปองคงเหลือ — เหมาะเสนอขายตอนมาใช้บริการครั้งถัดไป"}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Customer Cards Grid */}
@@ -367,12 +422,21 @@ export default function CustomersPage() {
                       </div>
 
                       {/* Order Count / Last visit badge */}
-                      <div className="text-right shrink-0">
-                        <span className="inline-block px-2 py-0.5 rounded-md bg-stone-100 text-[10px] font-bold text-stone-600 border border-stone-200">
-                          {c.orderCount || 0} บิล
-                        </span>
+                      <div className="text-right shrink-0 space-y-0.5">
+                        <div className="flex items-center justify-end gap-1">
+                          {c.daysSinceLastGrooming !== null &&
+                            c.daysSinceLastGrooming !== undefined &&
+                            c.daysSinceLastGrooming >= 45 && (
+                              <span className="inline-block px-1.5 py-0.5 rounded-md bg-rose-50 text-[10px] font-bold text-rose-700 border border-rose-200">
+                                ห่าง {c.daysSinceLastGrooming} วัน
+                              </span>
+                            )}
+                          <span className="inline-block px-2 py-0.5 rounded-md bg-stone-100 text-[10px] font-bold text-stone-600 border border-stone-200">
+                            {c.orderCount || 0} บิล
+                          </span>
+                        </div>
                         {c.lastOrderDate && (
-                          <p className="text-[10px] text-stone-400 mt-0.5">
+                          <p className="text-[10px] text-stone-400">
                             ล่าสุด {c.lastOrderDate}
                           </p>
                         )}

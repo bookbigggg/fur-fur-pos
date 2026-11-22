@@ -2,8 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { Pet, Customer, Species, AnnualMembership, Coupon, CustomerWithPets, CustomerStatsKPI } from "@/types/database";
+import { Pet, Customer, Species, AnnualMembership, Coupon, CustomerWithPets, CustomerStatsKPI, CustomerSegmentCounts } from "@/types/database";
 import { getNextPetCode } from "@/lib/sequences";
+import { isOrderActive, isAnonymousCustomerName, getBangkokTodayString, diffDaysBetweenDates } from "@/lib/order-utils";
 
 export interface PetSearchResult extends Pet {
   customer?: Customer;
@@ -417,7 +418,7 @@ export async function getCustomersList(options?: {
   search?: string;
   filter?: string;
   sort?: string;
-}): Promise<{ success: boolean; customers: CustomerWithPets[]; error?: string }> {
+}): Promise<{ success: boolean; customers: CustomerWithPets[]; segmentCounts?: CustomerSegmentCounts; error?: string }> {
   try {
     const supabase = await createClient();
 
@@ -456,22 +457,40 @@ export async function getCustomersList(options?: {
       return { success: false, customers: [], error: error.message };
     }
 
-    // 2. ดึงสรุปประวัติบิลเพื่อคำนวณจำนวนครั้งและวันที่มาล่าสุด
+    // 2. ดึงสรุปประวัติบิล (เฉพาะบิลที่ Active ไม่ถูก Void) เพื่อคำนวณจำนวนครั้งและวันที่มาล่าสุด
     const { data: orderStats } = await supabase
       .from("orders")
-      .select("customer_id, order_date")
+      .select("customer_id, order_date, order_type, service_description, discount_text")
       .order("order_date", { ascending: false });
 
     const orderCountMap: Record<string, number> = {};
     const lastOrderDateMap: Record<string, string> = {};
+    const groomingCountMap: Record<string, number> = {};
+    const lastGroomingDateMap: Record<string, string> = {};
 
-    (orderStats || []).forEach((ord: { customer_id?: string | null; order_date?: string | null }) => {
-      if (!ord.customer_id) return;
+    (orderStats || []).forEach((ord: {
+      customer_id?: string | null;
+      order_date?: string | null;
+      order_type?: string | null;
+      service_description?: string | null;
+      discount_text?: string | null;
+    }) => {
+      if (!ord.customer_id || !isOrderActive(ord)) return;
+
       orderCountMap[ord.customer_id] = (orderCountMap[ord.customer_id] || 0) + 1;
       if (!lastOrderDateMap[ord.customer_id] && ord.order_date) {
         lastOrderDateMap[ord.customer_id] = ord.order_date;
       }
+
+      if (ord.order_type === "grooming") {
+        groomingCountMap[ord.customer_id] = (groomingCountMap[ord.customer_id] || 0) + 1;
+        if (!lastGroomingDateMap[ord.customer_id] && ord.order_date) {
+          lastGroomingDateMap[ord.customer_id] = ord.order_date;
+        }
+      }
     });
+
+    const todayStr = getBangkokTodayString();
 
     // 3. Process customers and pets
     let processed: CustomerWithPets[] = (rawCustomers || []).map((c: any) => {
@@ -482,6 +501,11 @@ export async function getCustomersList(options?: {
         active_coupons: p.active_coupons?.filter((cp: Coupon) => cp.status === "ใช้งานได้" && cp.remaining_balance > 0) || [],
       }));
 
+      const lastGroomingDate = lastGroomingDateMap[c.id] || null;
+      const daysSinceLastGrooming = lastGroomingDate
+        ? Math.max(0, diffDaysBetweenDates(todayStr, lastGroomingDate))
+        : null;
+
       return {
         id: c.id,
         name: c.name,
@@ -491,9 +515,35 @@ export async function getCustomersList(options?: {
         updated_at: c.updated_at,
         pets,
         orderCount: orderCountMap[c.id] || 0,
+        groomingCount: groomingCountMap[c.id] || 0,
         lastOrderDate: lastOrderDateMap[c.id] || null,
+        lastGroomingDate,
+        daysSinceLastGrooming,
       };
     });
+
+    const isCustomerLapsed45 = (c: CustomerWithPets) =>
+      !isAnonymousCustomerName(c.name) &&
+      c.daysSinceLastGrooming !== null &&
+      c.daysSinceLastGrooming !== undefined &&
+      c.daysSinceLastGrooming >= 45;
+
+    const isCustomerUpsell = (c: CustomerWithPets) => {
+      if (isAnonymousCustomerName(c.name)) return false;
+      if ((c.groomingCount || 0) < 3) return false;
+      const hasMemOrCoupon = c.pets.some(
+        (p) =>
+          (p.active_membership && p.active_membership.status !== "หมดอายุ") ||
+          (p.active_coupons && p.active_coupons.length > 0)
+      );
+      return !hasMemOrCoupon;
+    };
+
+    const segmentCounts: CustomerSegmentCounts = {
+      all: processed.length,
+      lapsed45: processed.filter(isCustomerLapsed45).length,
+      upsell: processed.filter(isCustomerUpsell).length,
+    };
 
     // 4. Filter
     if (options?.filter) {
@@ -514,6 +564,10 @@ export async function getCustomersList(options?: {
         processed = processed.filter((c) =>
           c.pets.some((p) => p.species === "แมว")
         );
+      } else if (f === "lapsed45") {
+        processed = processed.filter(isCustomerLapsed45);
+      } else if (f === "upsell") {
+        processed = processed.filter(isCustomerUpsell);
       }
     }
 
@@ -545,11 +599,21 @@ export async function getCustomersList(options?: {
         const dateB = b.lastOrderDate || b.created_at;
         return new Date(dateB).getTime() - new Date(dateA).getTime();
       });
+    } else if (sort === "visits") {
+      processed.sort((a, b) => {
+        const diff = (b.groomingCount || 0) - (a.groomingCount || 0);
+        if (diff !== 0) return diff;
+        const orderDiff = (b.orderCount || 0) - (a.orderCount || 0);
+        if (orderDiff !== 0) return orderDiff;
+        const dateA = a.lastGroomingDate || a.lastOrderDate || "";
+        const dateB = b.lastGroomingDate || b.lastOrderDate || "";
+        return dateB.localeCompare(dateA);
+      });
     } else if (sort === "pets_count") {
       processed.sort((a, b) => b.pets.length - a.pets.length);
     }
 
-    return { success: true, customers: processed };
+    return { success: true, customers: processed, segmentCounts };
   } catch (err: unknown) {
     console.error("getCustomersList exception:", err);
     return { success: false, customers: [], error: err instanceof Error ? err.message : "เกิดข้อผิดพลาด" };

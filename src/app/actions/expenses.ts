@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient, requireSession } from "@/lib/supabase/server";
 import { Expense } from "@/types/database";
-import { isOrderActive } from "@/lib/order-utils";
+import { isOrderActive, computeOrderRevenueParts, getBangkokTodayString } from "@/lib/order-utils";
 
 export interface CreateExpenseInput {
   expense_date: string;
@@ -44,6 +44,22 @@ export interface PnLSummaryResult {
   orderCount: number;
   expenseCount: number;
   tableReady: boolean;
+}
+
+export interface MonthlyTrendPoint {
+  month: string;
+  groomingCount: number;
+  groomingSales: number;
+  avgGroomingTicket: number;
+  retailGpProfit: number;
+  membershipIncome: number;
+  totalIncome: number;
+  totalExpenses: number;
+  netProfit: number;
+  weekdayOrders: number;
+  weekendOrders: number;
+  weekdayAvgPerDay: number;
+  weekendAvgPerDay: number;
 }
 
 function getCurrentMonth(): string {
@@ -246,47 +262,12 @@ export async function getPnLSummary(monthStr?: string): Promise<PnLSummaryResult
 
     if (activeOrders.length > 0) {
       for (const ord of activeOrders) {
-        const netPaid = Number(ord.net_paid) || 0;
-        const shopNetIncome = Number(ord.shop_net_income) || 0;
-        const recognizedCoupon = Number(ord.recognized_coupon_income) || 0;
-        const retailData = retailItemsMap.get(ord.id);
-        const retailSalesInThisOrder = retailData?.totalSales || 0;
-        const retailProfitInThisOrder = retailData?.shopProfit || 0;
-
-        switch (ord.order_type) {
-          case "grooming": {
-            // ส่วนของค่าบริการกรูมมิ่งเงินสด (หักยอดขายปลีกออก หากเป็นบิลรวม)
-            const groomingCash = Math.max(0, netPaid - retailSalesInThisOrder);
-            groomingCashSales += groomingCash;
-
-            if (recognizedCoupon > 0) {
-              groomingCouponRecognized += recognizedCoupon;
-            } else if (Number(ord.coupon_deducted) > 0) {
-              // กรณีบิลเก่าที่ยังไม่มี recognized_coupon_income ให้คำนวณตามสัดส่วนคูปองมาตรฐาน 3000/3300 = 90.91%
-              groomingCouponRecognized += Number((Number(ord.coupon_deducted) * (3000 / 3300)).toFixed(2));
-            }
-
-            // หากบิลกรูมมิ่งนี้มีสินค้าปลีกพ่วงมาด้วย นำกำไร GP สินค้าไปบวกเข้า retailGpProfit
-            if (retailProfitInThisOrder > 0) {
-              retailGpProfit += retailProfitInThisOrder;
-            }
-            break;
-          }
-          case "retail":
-            // กำไร GP จากสินค้าฝากขาย
-            retailGpProfit += (retailProfitInThisOrder > 0 ? retailProfitInThisOrder : shopNetIncome);
-            break;
-          case "membership":
-            membershipIncome += netPaid;
-            break;
-          case "coupon":
-            // กระแสเงินสดรับล่วงหน้าจากการขายคูปอง (ยังไม่ถือเป็นรายได้บริการจนกว่าจะมีการใช้บริการจริง)
-            couponSales += netPaid;
-            break;
-          default:
-            groomingCashSales += netPaid;
-            break;
-        }
+        const parts = computeOrderRevenueParts(ord, retailItemsMap.get(ord.id));
+        groomingCashSales += parts.groomingCashSales;
+        groomingCouponRecognized += parts.groomingCouponRecognized;
+        retailGpProfit += parts.retailGpProfit;
+        membershipIncome += parts.membershipIncome;
+        couponSales += parts.couponSales;
       }
     }
 
@@ -419,5 +400,177 @@ export async function getPnLSummary(monthStr?: string): Promise<PnLSummaryResult
       expenseCount: 0,
       tableReady: false,
     };
+  }
+}
+
+function buildMonthList(endMonth: string, count: number): string[] {
+  const [yStr, mStr] = endMonth.split("-");
+  const endYear = parseInt(yStr, 10);
+  const endMon = parseInt(mStr, 10);
+  const months: string[] = [];
+  for (let i = count - 1; i >= 0; i--) {
+    const d = new Date(Date.UTC(endYear, endMon - 1 - i, 1));
+    const y = d.getUTCFullYear();
+    const m = String(d.getUTCMonth() + 1).padStart(2, "0");
+    months.push(`${y}-${m}`);
+  }
+  return months;
+}
+
+function countDayTypesInMonth(monthStr: string, todayStr: string): { weekdays: number; weekends: number } {
+  const currentMonth = todayStr.slice(0, 7);
+  if (monthStr > currentMonth) return { weekdays: 0, weekends: 0 };
+
+  const [yStr, mStr] = monthStr.split("-");
+  const year = parseInt(yStr, 10);
+  const month = parseInt(mStr, 10);
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const maxDay = monthStr === currentMonth ? Math.min(daysInMonth, parseInt(todayStr.slice(8, 10), 10)) : daysInMonth;
+
+  let weekdays = 0;
+  let weekends = 0;
+  for (let d = 1; d <= maxDay; d++) {
+    const dow = new Date(Date.UTC(year, month - 1, d)).getUTCDay();
+    if (dow === 0 || dow === 6) weekends++;
+    else weekdays++;
+  }
+  return { weekdays, weekends };
+}
+
+function isWeekendDate(dateStr: string): boolean {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  if (!y || !m || !d) return false;
+  const dow = new Date(Date.UTC(y, m - 1, d)).getUTCDay();
+  return dow === 0 || dow === 6;
+}
+
+export async function getMonthlyTrendAndDaySplit(
+  endMonth?: string,
+  monthsCount = 6
+): Promise<MonthlyTrendPoint[]> {
+  const targetEnd = endMonth || getCurrentMonth();
+  const months = buildMonthList(targetEnd, monthsCount);
+  const startDate = `${months[0]}-01`;
+  const { endDate } = getMonthDateRange(months[months.length - 1]);
+
+  try {
+    await requireSession(["owner", "manager"]);
+    const supabase = await createClient();
+
+    const [{ data: ordersData }, { data: expensesData }] = await Promise.all([
+      supabase
+        .from("orders")
+        .select("id, order_type, order_date, net_paid, shop_net_income, recognized_coupon_income, coupon_deducted, service_description, discount_text")
+        .gte("order_date", startDate)
+        .lte("order_date", endDate),
+      supabase
+        .from("expenses")
+        .select("expense_date, amount")
+        .gte("expense_date", startDate)
+        .lte("expense_date", endDate),
+    ]);
+
+    const activeOrders = (ordersData || []).filter(isOrderActive);
+    const activeIds = activeOrders.map((o) => o.id);
+    const retailItemsMap = new Map<string, { totalSales: number; shopProfit: number }>();
+
+    for (let i = 0; i < activeIds.length; i += 200) {
+      const chunk = activeIds.slice(i, i + 200);
+      const { data: retailItems } = await supabase
+        .from("order_retail_items")
+        .select("order_id, total_price, shop_profit, clearing_status")
+        .in("order_id", chunk)
+        .neq("clearing_status", "ยกเลิก");
+
+      for (const item of retailItems || []) {
+        const prev = retailItemsMap.get(item.order_id) || { totalSales: 0, shopProfit: 0 };
+        retailItemsMap.set(item.order_id, {
+          totalSales: prev.totalSales + Number(item.total_price || 0),
+          shopProfit: prev.shopProfit + Number(item.shop_profit || 0),
+        });
+      }
+    }
+
+    const bucketMap = new Map<string, {
+      groomingCount: number;
+      groomingSales: number;
+      retailGpProfit: number;
+      membershipIncome: number;
+      totalExpenses: number;
+      weekdayOrders: number;
+      weekendOrders: number;
+    }>();
+
+    for (const m of months) {
+      bucketMap.set(m, {
+        groomingCount: 0,
+        groomingSales: 0,
+        retailGpProfit: 0,
+        membershipIncome: 0,
+        totalExpenses: 0,
+        weekdayOrders: 0,
+        weekendOrders: 0,
+      });
+    }
+
+    for (const ord of activeOrders) {
+      const m = String(ord.order_date || "").slice(0, 7);
+      const bucket = bucketMap.get(m);
+      if (!bucket) continue;
+
+      const parts = computeOrderRevenueParts(ord, retailItemsMap.get(ord.id));
+      bucket.groomingSales += parts.groomingCashSales + parts.groomingCouponRecognized;
+      bucket.retailGpProfit += parts.retailGpProfit;
+      bucket.membershipIncome += parts.membershipIncome;
+
+      if (ord.order_type === "grooming") {
+        bucket.groomingCount += 1;
+        if (ord.order_date && isWeekendDate(ord.order_date)) {
+          bucket.weekendOrders += 1;
+        } else {
+          bucket.weekdayOrders += 1;
+        }
+      }
+    }
+
+    for (const exp of expensesData || []) {
+      const m = String(exp.expense_date || "").slice(0, 7);
+      const bucket = bucketMap.get(m);
+      if (bucket) {
+        bucket.totalExpenses += Number(exp.amount || 0);
+      }
+    }
+
+    const todayStr = getBangkokTodayString();
+
+    return months.map((m) => {
+      const b = bucketMap.get(m)!;
+      const groomingSales = Number(b.groomingSales.toFixed(2));
+      const retailGpProfit = Number(b.retailGpProfit.toFixed(2));
+      const membershipIncome = Number(b.membershipIncome.toFixed(2));
+      const totalIncome = Number((groomingSales + retailGpProfit + membershipIncome).toFixed(2));
+      const totalExpenses = Number(b.totalExpenses.toFixed(2));
+      const netProfit = Number((totalIncome - totalExpenses).toFixed(2));
+      const { weekdays, weekends } = countDayTypesInMonth(m, todayStr);
+
+      return {
+        month: m,
+        groomingCount: b.groomingCount,
+        groomingSales,
+        avgGroomingTicket: b.groomingCount > 0 ? Math.round(groomingSales / b.groomingCount) : 0,
+        retailGpProfit,
+        membershipIncome,
+        totalIncome,
+        totalExpenses,
+        netProfit,
+        weekdayOrders: b.weekdayOrders,
+        weekendOrders: b.weekendOrders,
+        weekdayAvgPerDay: weekdays > 0 ? Number((b.weekdayOrders / weekdays).toFixed(1)) : 0,
+        weekendAvgPerDay: weekends > 0 ? Number((b.weekendOrders / weekends).toFixed(1)) : 0,
+      };
+    });
+  } catch (err: unknown) {
+    console.error("getMonthlyTrendAndDaySplit Exception:", err);
+    return [];
   }
 }

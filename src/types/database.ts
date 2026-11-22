@@ -34,7 +34,10 @@ export interface Customer {
 export interface CustomerWithPets extends Customer {
   pets: Pet[];
   orderCount?: number;
+  groomingCount?: number;
   lastOrderDate?: string | null;
+  lastGroomingDate?: string | null;
+  daysSinceLastGrooming?: number | null;
 }
 
 export interface CustomerStatsKPI {
@@ -43,6 +46,12 @@ export interface CustomerStatsKPI {
   activeMembershipsCount: number;
   activeCouponsCount: number;
   totalCouponBalance: number;
+}
+
+export interface CustomerSegmentCounts {
+  all: number;
+  lapsed45: number;
+  upsell: number;
 }
 
 export interface Pet {
