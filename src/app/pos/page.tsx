@@ -33,6 +33,7 @@ import { PetSearchResult, getPetById, getPetsByCustomerId } from "@/app/actions/
 import { getOrderDetail, OrderDetailResult } from "@/app/actions/orders";
 import { useStoreSettings } from "@/lib/settings";
 import { STORE_PROFILE } from "@/lib/store-profile";
+import { ACTIVE_PROMOTIONS, POS_ENTRY_GUIDELINES } from "@/lib/promotions";
 import { copyToClipboard } from "@/lib/clipboard";
 import PetSelector from "@/components/pos/PetSelector";
 import RetailCatalog from "@/components/pos/RetailCatalog";
@@ -124,6 +125,7 @@ function POSContent() {
   // Receipt Modal State สำหรับหน้า POS (เปิดอัตโนมัติเมื่อคิดเงินสำเร็จ)
   const [createdOrderDetail, setCreatedOrderDetail] = useState<OrderDetailResult | null>(null);
   const [isReceiptOpen, setIsReceiptOpen] = useState(false);
+  const [isPromoGuideOpen, setIsPromoGuideOpen] = useState(false);
 
   // Quick Bank & QR Preview State
   const [copiedAccountQuick, setCopiedAccountQuick] = useState(false);
@@ -596,6 +598,17 @@ function POSContent() {
 
       {/* Main Content */}
       <main className="p-4 max-w-xl mx-auto w-full space-y-4 flex-1">
+        {/* Quick Promo & POS Guide Button */}
+        <div className="flex justify-end -mb-1">
+          <button
+            type="button"
+            onClick={() => setIsPromoGuideOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200/80 text-xs font-bold shadow-2xs transition-all active:scale-95 cursor-pointer"
+          >
+            <Tag className="w-3.5 h-3.5 text-amber-600" />
+            <span>โปร & วิธีคีย์</span>
+          </button>
+        </div>
         {errorMessage && (
           <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl font-medium">
             {errorMessage}
@@ -1482,6 +1495,85 @@ function POSContent() {
             >
               ปิดหน้าต่าง
             </button>
+          </div>
+        </div>
+      )}
+      {/* Promo & POS Entry Guide Modal */}
+      {isPromoGuideOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4"
+          onClick={() => setIsPromoGuideOpen(false)}
+        >
+          <div
+            className="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl shadow-2xl border border-stone-200 overflow-hidden max-h-[85dvh] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="px-5 py-4 border-b border-stone-100 flex items-center justify-between bg-amber-50/60">
+              <div className="flex items-center gap-2">
+                <Tag className="w-4 h-4 text-amber-700" />
+                <h3 className="text-sm font-black text-stone-900">โปรโมชั่น & วิธีคีย์หน้าร้าน</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsPromoGuideOpen(false)}
+                className="p-1.5 rounded-xl text-stone-400 hover:text-stone-700 hover:bg-white transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="p-5 space-y-5 overflow-y-auto text-xs">
+              <div className="space-y-2">
+                <p className="text-[11px] font-bold text-amber-800 uppercase tracking-wider">
+                  โปรโมชั่นที่ใช้อยู่
+                </p>
+                <div className="space-y-2">
+                  {ACTIVE_PROMOTIONS.map((promo) => (
+                    <div
+                      key={promo.title}
+                      className="p-3 rounded-2xl bg-amber-50/70 border border-amber-200/70 space-y-1"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-bold text-stone-900">{promo.title}</span>
+                        {promo.badge && (
+                          <span className="px-2 py-0.5 rounded-full bg-amber-600 text-white text-[10px] font-extrabold shrink-0">
+                            {promo.badge}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-stone-600 leading-relaxed">{promo.detail}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <p className="text-[11px] font-bold text-stone-500 uppercase tracking-wider">
+                  วิธีคีย์ให้ข้อมูลตรง
+                </p>
+                <div className="space-y-2">
+                  {POS_ENTRY_GUIDELINES.map((rule) => (
+                    <div
+                      key={rule.title}
+                      className="p-3 rounded-2xl bg-stone-50 border border-stone-200/80 space-y-0.5"
+                    >
+                      <p className="font-bold text-stone-900">{rule.title}</p>
+                      <p className="text-stone-600 leading-relaxed">{rule.detail}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 border-t border-stone-100 bg-stone-50/60">
+              <button
+                type="button"
+                onClick={() => setIsPromoGuideOpen(false)}
+                className="w-full py-2.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-white text-xs font-bold cursor-pointer"
+              >
+                รับทราบ
+              </button>
+            </div>
           </div>
         </div>
       )}
