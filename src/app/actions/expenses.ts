@@ -432,7 +432,7 @@ function countDayTypesInMonth(monthStr: string, todayStr: string): { weekdays: n
   for (let d = 1; d <= maxDay; d++) {
     const dow = new Date(Date.UTC(year, month - 1, d)).getUTCDay();
     if (dow === 0 || dow === 6) weekends++;
-    else if (dow !== 2) weekdays++; // ร้านหยุดประจำวันอังคาร
+    else if (dow !== 1 && dow !== 2) weekdays++; // ร้านหยุดประจำวันจันทร์และวันอังคาร
   }
   return { weekdays, weekends };
 }

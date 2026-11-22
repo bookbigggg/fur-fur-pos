@@ -2,7 +2,7 @@
 "use client";
 
 import PackagePurchase from "@/components/pos/PackagePurchase";
-import React, { useState, useEffect, useMemo, useTransition, Suspense } from "react";
+import React, { useState, useEffect, useMemo, useRef, useTransition, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { 
   Scissors, 
@@ -22,7 +22,8 @@ import {
   Trash2,
   Receipt,
   Copy,
-  X
+  X,
+  Plus
 } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import { PaymentMethod, Product, Coupon } from "@/types/database";
@@ -200,6 +201,26 @@ function POSContent() {
         selectedDiscount: isMember ? "10%" : "0%",
         bahtDiscountInput: "",
       },
+    ]);
+  };
+
+  // เพิ่มรายการบริการแยกให้สัตว์เลี้ยงตัวเดิมในบิลเดียวกัน (เช่น สปา 99 บาทที่ไม่ลด 20%)
+  const extraLineSeqRef = useRef(0);
+  const handleAddExtraServiceLine = (pet: PetSearchResult, afterIndex: number) => {
+    extraLineSeqRef.current += 1;
+    const newLine: GroomingServiceLine = {
+      id: `${pet.id}-extra-${extraLineSeqRef.current}`,
+      pet,
+      serviceDesc: "",
+      priceInput: "",
+      discountMode: "percent",
+      selectedDiscount: "0%",
+      bahtDiscountInput: "",
+    };
+    setGroomingLines((prev) => [
+      ...prev.slice(0, afterIndex + 1),
+      newLine,
+      ...prev.slice(afterIndex + 1),
     ]);
   };
 
@@ -450,7 +471,13 @@ function POSContent() {
 
         if (result.success && result.orderNumber) {
           setSuccessOrderNumber(result.orderNumber);
-          const petCountText = validLines.length > 1 ? ` (น้องๆ ${validLines.length} ตัว)` : "";
+          const uniquePetCount = new Set(validLines.map((l) => l.pet.id)).size;
+          const petCountText =
+            uniquePetCount > 1
+              ? ` (น้องๆ ${uniquePetCount} ตัว)`
+              : validLines.length > 1
+              ? ` (${validLines.length} รายการ)`
+              : "";
           if (hasRetail) {
             setSuccessNote(`บิลรวม (Grooming${petCountText} + สินค้าปลีก ${cart.length} รายการ) • ยอดชำระ ฿${combinedNetPaid.toLocaleString()}`);
           } else {
@@ -742,18 +769,30 @@ function POSContent() {
                           </div>
                         </div>
 
-                        {/* Remove Pet Button (if more than 1 pet in bill) */}
-                        {groomingLines.length > 1 && (
+                        {/* Add extra service line / Remove Pet Button */}
+                        <div className="flex items-center gap-1.5 shrink-0">
                           <button
                             type="button"
-                            onClick={() => handleRemoveGroomingLine(index)}
-                            className="min-h-[40px] px-3 py-1.5 rounded-xl text-stone-400 hover:text-rose-600 active:bg-rose-50 transition-all cursor-pointer flex items-center gap-1.5 text-xs font-bold active:scale-95"
-                            title="นำน้องออกจากบิล"
+                            onClick={() => handleAddExtraServiceLine(line.pet, index)}
+                            className="min-h-[36px] px-2.5 py-1 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200/80 transition-all cursor-pointer flex items-center gap-1 text-[11px] font-bold active:scale-95"
+                            title="เพิ่มรายการบริการแยกให้ตัวนี้ (เช่น สปา 99 บาทที่ไม่รวมส่วนลด)"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
-                            <span>นำออก</span>
+                            <Plus className="w-3.5 h-3.5" />
+                            <span>เพิ่มบริการแยก</span>
                           </button>
-                        )}
+
+                          {groomingLines.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveGroomingLine(index)}
+                              className="min-h-[36px] px-2.5 py-1 rounded-xl text-stone-400 hover:text-rose-600 active:bg-rose-50 transition-all cursor-pointer flex items-center gap-1 text-[11px] font-bold active:scale-95"
+                              title="นำรายการนี้ออกจากบิล"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              <span>นำออก</span>
+                            </button>
+                          )}
+                        </div>
                       </div>
 
                       {/* รายการบริการของตัวนี้ */}

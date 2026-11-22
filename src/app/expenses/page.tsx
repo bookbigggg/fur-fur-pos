@@ -458,7 +458,7 @@ export default function ExpensesAndPnLPage() {
 
                   <div className="grid grid-cols-2 gap-2.5">
                     <div className="p-3 rounded-xl bg-sky-50/70 border border-sky-200/70 space-y-0.5">
-                      <span className="text-[10px] font-bold text-sky-800 block">วันธรรมดาเปิดร้าน (จ./พ./พฤ./ศ.)</span>
+                      <span className="text-[10px] font-bold text-sky-800 block">วันธรรมดาเปิดร้าน (พ.–ศ.)</span>
                       <span className="text-base font-black text-sky-950 block">
                         {currentTrend.weekdayOrders} บิล ({weekdayPct}%)
                       </span>
