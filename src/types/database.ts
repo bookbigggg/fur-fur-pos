@@ -51,7 +51,8 @@ export interface CustomerStatsKPI {
 export interface CustomerSegmentCounts {
   all: number;
   lapsed45: number;
-  upsell: number;
+  memberTarget: number;
+  vipFullPrice: number;
 }
 
 export interface Pet {

@@ -30,7 +30,7 @@ import CustomerFormModal from "@/components/customers/CustomerFormModal";
 import PetFormModal from "@/components/customers/PetFormModal";
 import CustomerDetailModal from "@/components/customers/CustomerDetailModal";
 
-type FilterType = "all" | "lapsed45" | "upsell" | "membership" | "coupon" | "dog" | "cat";
+type FilterType = "all" | "lapsed45" | "member_target" | "vip_full_price" | "membership" | "coupon" | "dog" | "cat";
 type SortType = "name" | "latest" | "visits" | "pets_count";
 
 export default function CustomersPage() {
@@ -38,7 +38,8 @@ export default function CustomersPage() {
   const [segmentCounts, setSegmentCounts] = useState<CustomerSegmentCounts>({
     all: 0,
     lapsed45: 0,
-    upsell: 0,
+    memberTarget: 0,
+    vipFullPrice: 0,
   });
   const [stats, setStats] = useState<CustomerStatsKPI>({
     totalCustomers: 0,
@@ -91,7 +92,7 @@ export default function CustomersPage() {
 
   const handleSelectFilter = (nextFilter: FilterType) => {
     setFilter(nextFilter);
-    if (nextFilter === "lapsed45" || nextFilter === "upsell") {
+    if (nextFilter === "lapsed45" || nextFilter === "member_target" || nextFilter === "vip_full_price") {
       setSort("visits");
     }
   };
@@ -275,15 +276,27 @@ export default function CustomersPage() {
             </button>
             <button
               type="button"
-              onClick={() => handleSelectFilter("upsell")}
+              onClick={() => handleSelectFilter("member_target")}
               className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1 ${
-                filter === "upsell"
+                filter === "member_target"
                   ? "bg-sky-600 text-white shadow-xs"
                   : "bg-sky-50 text-sky-800 hover:bg-sky-100 border border-sky-200/70"
               }`}
             >
               <Sparkles className="w-3.5 h-3.5" />
-              <span>ขาประจำยังไม่เป็นสมาชิก ({segmentCounts.upsell})</span>
+              <span>เป้าขายสมาชิก 299 ({segmentCounts.memberTarget})</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSelectFilter("vip_full_price")}
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1 ${
+                filter === "vip_full_price"
+                  ? "bg-violet-600 text-white shadow-xs"
+                  : "bg-violet-50 text-violet-800 hover:bg-violet-100 border border-violet-200/70"
+              }`}
+            >
+              <Users className="w-3.5 h-3.5" />
+              <span>ขาประจำ 5+ ครั้ง จ่ายเต็ม ({segmentCounts.vipFullPrice})</span>
             </button>
             <button
               type="button"
@@ -335,17 +348,21 @@ export default function CustomersPage() {
             </button>
           </div>
 
-          {(filter === "lapsed45" || filter === "upsell") && (
+          {(filter === "lapsed45" || filter === "member_target" || filter === "vip_full_price") && (
             <div className={`px-3 py-2 rounded-xl text-xs border flex items-center gap-2 ${
               filter === "lapsed45"
                 ? "bg-rose-50/70 border-rose-200 text-rose-900"
-                : "bg-sky-50/70 border-sky-200 text-sky-900"
+                : filter === "member_target"
+                  ? "bg-sky-50/70 border-sky-200 text-sky-900"
+                  : "bg-violet-50/70 border-violet-200 text-violet-900"
             }`}>
               <AlertTriangle className="w-4 h-4 shrink-0" />
               <span>
                 {filter === "lapsed45"
                   ? "กลุ่มลูกค้าที่ไม่ได้มากรูมมิ่งเกิน 45 วัน (ตัด Walk in ออกแล้ว) เรียงตามคนที่เคยมาบ่อยขึ้นก่อน เพื่อคัดลอกเบอร์หรือทัก LINE ชวนกลับมาอาบน้ำ"
-                  : "ลูกค้าที่เคยมากรูมมิ่ง 3 ครั้งขึ้นไป แต่ยังไม่มีสมาชิกรายปี 299 หรือคูปองคงเหลือ — เหมาะเสนอขายตอนมาใช้บริการครั้งถัดไป"}
+                  : filter === "member_target"
+                    ? "ลูกค้าที่มา 2–4 ครั้ง และยังไม่มีสมาชิก/คูปอง — เหมาะเสนอขายสมาชิกรายปี 299 เพื่อดึงให้กลับมาบ่อยขึ้นเป็นขาประจำ"
+                    : "ขาประจำที่มา 5 ครั้งขึ้นไปโดยไม่มีสมาชิก (จ่ายเต็มเป็นหลัก) — ไม่ควรชวนลด 10% ให้เสียมาร์จิ้น ให้เน้นดูแลพิเศษ ขายบริการเสริม หรือเสนอคูปองเงินสด 3,000"}
               </span>
             </div>
           )}

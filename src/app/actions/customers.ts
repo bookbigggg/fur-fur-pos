@@ -522,40 +522,44 @@ export async function getCustomersList(options?: {
       };
     });
 
+    const hasActiveMem = (c: CustomerWithPets) =>
+      c.pets.some((p) => p.active_membership && p.active_membership.status !== "หมดอายุ");
+
+    const hasActiveCoupon = (c: CustomerWithPets) =>
+      c.pets.some((p) => p.active_coupons && p.active_coupons.length > 0);
+
     const isCustomerLapsed45 = (c: CustomerWithPets) =>
       !isAnonymousCustomerName(c.name) &&
       c.daysSinceLastGrooming !== null &&
       c.daysSinceLastGrooming !== undefined &&
       c.daysSinceLastGrooming >= 45;
 
-    const isCustomerUpsell = (c: CustomerWithPets) => {
+    const isMemberTarget = (c: CustomerWithPets) => {
       if (isAnonymousCustomerName(c.name)) return false;
-      if ((c.groomingCount || 0) < 3) return false;
-      const hasMemOrCoupon = c.pets.some(
-        (p) =>
-          (p.active_membership && p.active_membership.status !== "หมดอายุ") ||
-          (p.active_coupons && p.active_coupons.length > 0)
-      );
-      return !hasMemOrCoupon;
+      const visits = c.groomingCount || 0;
+      return visits >= 2 && visits <= 4 && !hasActiveMem(c) && !hasActiveCoupon(c);
+    };
+
+    const isVipFullPrice = (c: CustomerWithPets) => {
+      if (isAnonymousCustomerName(c.name)) return false;
+      const visits = c.groomingCount || 0;
+      return visits >= 5 && !hasActiveMem(c) && !hasActiveCoupon(c);
     };
 
     const segmentCounts: CustomerSegmentCounts = {
       all: processed.length,
       lapsed45: processed.filter(isCustomerLapsed45).length,
-      upsell: processed.filter(isCustomerUpsell).length,
+      memberTarget: processed.filter(isMemberTarget).length,
+      vipFullPrice: processed.filter(isVipFullPrice).length,
     };
 
     // 4. Filter
     if (options?.filter) {
       const f = options.filter;
       if (f === "membership") {
-        processed = processed.filter((c) =>
-          c.pets.some((p) => p.active_membership && p.active_membership.status !== "หมดอายุ")
-        );
+        processed = processed.filter(hasActiveMem);
       } else if (f === "coupon") {
-        processed = processed.filter((c) =>
-          c.pets.some((p) => p.active_coupons && p.active_coupons.length > 0)
-        );
+        processed = processed.filter(hasActiveCoupon);
       } else if (f === "dog") {
         processed = processed.filter((c) =>
           c.pets.some((p) => p.species === "หมา")
@@ -566,8 +570,10 @@ export async function getCustomersList(options?: {
         );
       } else if (f === "lapsed45") {
         processed = processed.filter(isCustomerLapsed45);
-      } else if (f === "upsell") {
-        processed = processed.filter(isCustomerUpsell);
+      } else if (f === "member_target") {
+        processed = processed.filter(isMemberTarget);
+      } else if (f === "vip_full_price") {
+        processed = processed.filter(isVipFullPrice);
       }
     }
 
