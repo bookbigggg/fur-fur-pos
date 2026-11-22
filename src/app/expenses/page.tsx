@@ -449,7 +449,7 @@ export default function ExpensesAndPnLPage() {
                 <section className="bg-white rounded-2xl p-4 border border-stone-200/90 shadow-sm space-y-3">
                   <div className="flex items-center justify-between">
                     <h3 className="text-xs font-bold text-stone-800 uppercase tracking-wider">
-                      สัดส่วนคิวกรูมมิ่ง: จ.–ศ. vs ส.–อา.
+                      สัดส่วนคิวกรูมมิ่ง: วันธรรมดา vs วันหยุด
                     </h3>
                     <span className="text-[11px] font-bold text-stone-500">
                       เฉลี่ย ฿{currentTrend.avgGroomingTicket.toLocaleString()}/บิล
@@ -458,7 +458,7 @@ export default function ExpensesAndPnLPage() {
 
                   <div className="grid grid-cols-2 gap-2.5">
                     <div className="p-3 rounded-xl bg-sky-50/70 border border-sky-200/70 space-y-0.5">
-                      <span className="text-[10px] font-bold text-sky-800 block">วันธรรมดา (จ.–ศ.)</span>
+                      <span className="text-[10px] font-bold text-sky-800 block">วันธรรมดาเปิดร้าน (จ./พ./พฤ./ศ.)</span>
                       <span className="text-base font-black text-sky-950 block">
                         {currentTrend.weekdayOrders} บิล ({weekdayPct}%)
                       </span>
