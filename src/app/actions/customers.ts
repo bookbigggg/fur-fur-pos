@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { Pet, Customer, Species, AnnualMembership, Coupon, CustomerWithPets, CustomerStatsKPI, CustomerSegmentCounts } from "@/types/database";
 import { getNextPetCode } from "@/lib/sequences";
-import { isOrderActive, isAnonymousCustomerName, getBangkokTodayString, diffDaysBetweenDates } from "@/lib/order-utils";
+import { isOrderActive, isAnonymousCustomerName, isCustomerIncomplete, getBangkokTodayString, diffDaysBetweenDates } from "@/lib/order-utils";
 
 export interface PetSearchResult extends Pet {
   customer?: Customer;
@@ -551,6 +551,7 @@ export async function getCustomersList(options?: {
       lapsed45: processed.filter(isCustomerLapsed45).length,
       memberTarget: processed.filter(isMemberTarget).length,
       vipFullPrice: processed.filter(isVipFullPrice).length,
+      incomplete: processed.filter(isCustomerIncomplete).length,
     };
 
     // 4. Filter
@@ -574,6 +575,8 @@ export async function getCustomersList(options?: {
         processed = processed.filter(isMemberTarget);
       } else if (f === "vip_full_price") {
         processed = processed.filter(isVipFullPrice);
+      } else if (f === "incomplete") {
+        processed = processed.filter(isCustomerIncomplete);
       }
     }
 
@@ -970,6 +973,234 @@ export async function deleteCustomer(customerId: string): Promise<{ success: boo
     return { success: true };
   } catch (err: unknown) {
     return { success: false, error: err instanceof Error ? err.message : "เกิดข้อผิดพลาด" };
+  }
+}
+
+export interface PetMergeMapping {
+  sourcePetId: string;
+  targetPetId: string;
+}
+
+export interface MergeCustomersInput {
+  sourceCustomerId: string;
+  targetCustomerId: string;
+  petMappings?: PetMergeMapping[];
+  mergedPhone?: string | null;
+  mergedNotes?: string | null;
+}
+
+export interface MergeCustomersResult {
+  success: boolean;
+  movedPetsCount?: number;
+  mergedPetsCount?: number;
+  movedOrdersCount?: number;
+  error?: string;
+}
+
+/**
+ * รวมข้อมูลลูกค้าซ้ำ: ย้ายสัตว์เลี้ยง, สมาชิก, คูปอง และประวัติบิลทั้งหมดจากลูกค้าต้นทาง (source)
+ * ไปรวมไว้ที่ลูกค้าปลายทาง (target) แล้วลบ record ต้นทางออกอย่างปลอดภัย
+ */
+export async function mergeCustomers(input: MergeCustomersInput): Promise<MergeCustomersResult> {
+  try {
+    const { sourceCustomerId, targetCustomerId } = input;
+    if (!sourceCustomerId || !targetCustomerId) {
+      return { success: false, error: "กรุณาเลือกลูกค้าต้นทางและปลายทางให้ครบถ้วน" };
+    }
+    if (sourceCustomerId === targetCustomerId) {
+      return { success: false, error: "ไม่สามารถรวมลูกค้ารายเดียวกันได้" };
+    }
+
+    const supabase = await createClient();
+    const now = new Date().toISOString();
+
+    const [{ data: sourceCustomer, error: srcErr }, { data: targetCustomer, error: tgtErr }] =
+      await Promise.all([
+        supabase
+          .from("customers")
+          .select("id, name, phone, notes, pets:pets(id, name)")
+          .eq("id", sourceCustomerId)
+          .single(),
+        supabase
+          .from("customers")
+          .select("id, name, phone, notes, pets:pets(id, name)")
+          .eq("id", targetCustomerId)
+          .single(),
+      ]);
+
+    if (srcErr || !sourceCustomer) {
+      return { success: false, error: "ไม่พบข้อมูลลูกค้าฝั่งที่จะถูกยุบรวม" };
+    }
+    if (tgtErr || !targetCustomer) {
+      return { success: false, error: "ไม่พบข้อมูลลูกค้าหลักปลายทาง" };
+    }
+
+    const sourcePets = (sourceCustomer.pets || []) as Array<{ id: string; name: string }>;
+    const targetPets = (targetCustomer.pets || []) as Array<{ id: string; name: string }>;
+    const sourcePetIdSet = new Set(sourcePets.map((p) => p.id));
+    const targetPetIdSet = new Set(targetPets.map((p) => p.id));
+
+    // ตรวจสอบความถูกต้องของการจับคู่สัตว์เลี้ยงซ้ำ
+    const validMappings: PetMergeMapping[] = [];
+    const seenSourcePetIds = new Set<string>();
+    for (const m of input.petMappings || []) {
+      if (!m.sourcePetId || !m.targetPetId) continue;
+      if (!sourcePetIdSet.has(m.sourcePetId) || !targetPetIdSet.has(m.targetPetId)) {
+        return { success: false, error: "ข้อมูลการจับคู่สัตว์เลี้ยงไม่ถูกต้อง" };
+      }
+      if (seenSourcePetIds.has(m.sourcePetId)) {
+        return { success: false, error: "พบการเลือกสัตว์เลี้ยงต้นทางซ้ำกัน" };
+      }
+      seenSourcePetIds.add(m.sourcePetId);
+      validMappings.push(m);
+    }
+
+    // นับจำนวนบิลทั้งหมดที่จะถูกย้ายจากลูกค้าต้นทาง
+    const { count: ordersToMoveCount } = await supabase
+      .from("orders")
+      .select("*", { count: "exact", head: true })
+      .eq("customer_id", sourceCustomerId);
+
+    // 1. รวมสัตว์เลี้ยงที่ระบุว่าซ้ำกัน (ย้าย orders, annual_memberships, coupons -> targetPetId แล้วลบ sourcePetId)
+    for (const mapping of validMappings) {
+      const { error: moveOrdersByPetErr } = await supabase
+        .from("orders")
+        .update({
+          pet_id: mapping.targetPetId,
+          customer_id: targetCustomerId,
+          updated_at: now,
+        })
+        .eq("pet_id", mapping.sourcePetId);
+
+      if (moveOrdersByPetErr) {
+        return { success: false, error: `ย้ายประวัติบิลของสัตว์เลี้ยงไม่สำเร็จ: ${moveOrdersByPetErr.message}` };
+      }
+
+      const { error: moveMemErr } = await supabase
+        .from("annual_memberships")
+        .update({ pet_id: mapping.targetPetId })
+        .eq("pet_id", mapping.sourcePetId);
+
+      if (moveMemErr) {
+        return { success: false, error: `ย้ายข้อมูลสมาชิกรายปีไม่สำเร็จ: ${moveMemErr.message}` };
+      }
+
+      const { error: moveCouponErr } = await supabase
+        .from("coupons")
+        .update({ pet_id: mapping.targetPetId })
+        .eq("pet_id", mapping.sourcePetId);
+
+      if (moveCouponErr) {
+        return { success: false, error: `ย้ายข้อมูลคูปองไม่สำเร็จ: ${moveCouponErr.message}` };
+      }
+
+      const { error: delPetErr } = await supabase
+        .from("pets")
+        .delete()
+        .eq("id", mapping.sourcePetId);
+
+      if (delPetErr) {
+        return { success: false, error: `ลบข้อมูลสัตว์เลี้ยงซ้ำไม่สำเร็จ: ${delPetErr.message}` };
+      }
+    }
+
+    // 2. ย้ายสัตว์เลี้ยงตัวที่เหลือของ source ไปอยู่บ้าน target
+    const remainingSourcePets = sourcePets.filter((p) => !seenSourcePetIds.has(p.id));
+    if (remainingSourcePets.length > 0) {
+      const { error: movePetsErr } = await supabase
+        .from("pets")
+        .update({
+          customer_id: targetCustomerId,
+          updated_at: now,
+        })
+        .eq("customer_id", sourceCustomerId);
+
+      if (movePetsErr) {
+        return { success: false, error: `ย้ายสัตว์เลี้ยงไม่สำเร็จ: ${movePetsErr.message}` };
+      }
+    }
+
+    // 3. ย้ายบิลทั้งหมดของ source (รวมถึงบิลที่ pet_id เป็น null เช่น บิลขายปลีก) มาที่ target
+    const { error: moveAllOrdersErr } = await supabase
+      .from("orders")
+      .update({
+        customer_id: targetCustomerId,
+        updated_at: now,
+      })
+      .eq("customer_id", sourceCustomerId);
+
+    if (moveAllOrdersErr) {
+      return { success: false, error: `ย้ายประวัติบิลไม่สำเร็จ: ${moveAllOrdersErr.message}` };
+    }
+
+    // 4. อัปเดตเบอร์โทรและหมายเหตุของลูกค้าหลัก
+    const finalPhone =
+      input.mergedPhone !== undefined
+        ? input.mergedPhone?.trim() || null
+        : targetCustomer.phone?.trim() || sourceCustomer.phone?.trim() || null;
+
+    let finalNotes: string | null;
+    if (input.mergedNotes !== undefined) {
+      finalNotes = input.mergedNotes?.trim() || null;
+    } else {
+      const tgtNote = targetCustomer.notes?.trim() || "";
+      const srcNote = sourceCustomer.notes?.trim() || "";
+      if (tgtNote && srcNote && tgtNote !== srcNote) {
+        finalNotes = `${tgtNote} | ${srcNote}`;
+      } else {
+        finalNotes = tgtNote || srcNote || null;
+      }
+    }
+
+    const { error: updateTargetErr } = await supabase
+      .from("customers")
+      .update({
+        phone: finalPhone,
+        notes: finalNotes,
+        updated_at: now,
+      })
+      .eq("id", targetCustomerId);
+
+    if (updateTargetErr) {
+      return { success: false, error: `อัปเดตข้อมูลลูกค้าหลักไม่สำเร็จ: ${updateTargetErr.message}` };
+    }
+
+    // 5. ตรวจสอบความปลอดภัยก่อนลบ record ลูกค้าต้นทาง (ต้องไม่มี pets และ orders เหลือค้าง)
+    const [{ count: leftoverPets }, { count: leftoverOrders }] = await Promise.all([
+      supabase.from("pets").select("*", { count: "exact", head: true }).eq("customer_id", sourceCustomerId),
+      supabase.from("orders").select("*", { count: "exact", head: true }).eq("customer_id", sourceCustomerId),
+    ]);
+
+    if ((leftoverPets || 0) > 0 || (leftoverOrders || 0) > 0) {
+      return {
+        success: false,
+        error: `ยังไม่สามารถลบข้อมูลลูกค้าต้นทางได้ เนื่องจากยังเหลือข้อมูลค้างอยู่ (${leftoverPets || 0} สัตว์เลี้ยง, ${leftoverOrders || 0} บิล)`,
+      };
+    }
+
+    const { error: delCustomerErr } = await supabase
+      .from("customers")
+      .delete()
+      .eq("id", sourceCustomerId);
+
+    if (delCustomerErr) {
+      return { success: false, error: `ลบข้อมูลลูกค้าต้นทางไม่สำเร็จ: ${delCustomerErr.message}` };
+    }
+
+    revalidatePath("/customers");
+    revalidatePath("/pos");
+    revalidatePath("/orders");
+    revalidatePath("/coupons");
+
+    return {
+      success: true,
+      movedPetsCount: remainingSourcePets.length,
+      mergedPetsCount: validMappings.length,
+      movedOrdersCount: ordersToMoveCount || 0,
+    };
+  } catch (err: unknown) {
+    console.error("mergeCustomers exception:", err);
+    return { success: false, error: err instanceof Error ? err.message : "เกิดข้อผิดพลาดในการรวมลูกค้า" };
   }
 }
 

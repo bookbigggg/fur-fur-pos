@@ -22,7 +22,8 @@ import {
   Plus, 
   Loader2, 
   ChevronRight,
-  ExternalLink
+  ExternalLink,
+  GitMerge
 } from "lucide-react";
 import { CustomerWithPets, Pet, Species } from "@/types/database";
 import { getCustomerDetail, deletePet, deleteCustomer, CustomerOrderHistory } from "@/app/actions/customers";
@@ -31,9 +32,11 @@ import { copyToClipboard } from "@/lib/clipboard";
 interface CustomerDetailModalProps {
   isOpen: boolean;
   customerId: string | null;
+  refreshKey?: number;
   onClose: () => void;
   onRefreshParent: () => void;
   onEditCustomer: (customer: CustomerWithPets) => void;
+  onMergeCustomer?: (customer: CustomerWithPets) => void;
   onAddPet: (customer: CustomerWithPets) => void;
   onEditPet: (pet: Pet, customer: CustomerWithPets) => void;
 }
@@ -41,9 +44,11 @@ interface CustomerDetailModalProps {
 export default function CustomerDetailModal({
   isOpen,
   customerId,
+  refreshKey = 0,
   onClose,
   onRefreshParent,
   onEditCustomer,
+  onMergeCustomer,
   onAddPet,
   onEditPet,
 }: CustomerDetailModalProps) {
@@ -81,7 +86,7 @@ export default function CustomerDetailModal({
       setCustomer(null);
       setOrders([]);
     }
-  }, [isOpen, customerId, loadData]);
+  }, [isOpen, customerId, refreshKey, loadData]);
 
   if (!isOpen) return null;
 
@@ -220,7 +225,7 @@ export default function CustomerDetailModal({
                     )}
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <button
                       type="button"
                       onClick={() => onEditCustomer(customer)}
@@ -229,6 +234,17 @@ export default function CustomerDetailModal({
                       <Edit3 className="w-3.5 h-3.5" />
                       <span>แก้ไข</span>
                     </button>
+                    {onMergeCustomer && (
+                      <button
+                        type="button"
+                        onClick={() => onMergeCustomer(customer)}
+                        className="px-3 py-1.5 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 text-xs font-bold hover:bg-amber-100 transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                        title="รวมลูกค้าซ้ำเข้าด้วยกัน"
+                      >
+                        <GitMerge className="w-3.5 h-3.5 text-amber-700" />
+                        <span>รวมลูกค้าซ้ำ</span>
+                      </button>
+                    )}
                     <button
                       type="button"
                       onClick={handleDeleteCustomer}

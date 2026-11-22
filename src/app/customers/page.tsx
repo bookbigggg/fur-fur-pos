@@ -20,17 +20,21 @@ import {
   ArrowUpDown, 
   Calendar,
   X,
-  Loader2
+  Loader2,
+  UserX,
+  CheckCircle2
 } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import { CustomerWithPets, CustomerStatsKPI, CustomerSegmentCounts, Pet } from "@/types/database";
 import { getCustomersList, getCustomerStats } from "@/app/actions/customers";
 import { copyToClipboard } from "@/lib/clipboard";
+import { isAnonymousCustomerName, isCustomerIncomplete } from "@/lib/order-utils";
 import CustomerFormModal from "@/components/customers/CustomerFormModal";
 import PetFormModal from "@/components/customers/PetFormModal";
 import CustomerDetailModal from "@/components/customers/CustomerDetailModal";
+import MergeCustomerModal from "@/components/customers/MergeCustomerModal";
 
-type FilterType = "all" | "lapsed45" | "member_target" | "vip_full_price" | "membership" | "coupon" | "dog" | "cat";
+type FilterType = "all" | "lapsed45" | "member_target" | "vip_full_price" | "incomplete" | "membership" | "coupon" | "dog" | "cat";
 type SortType = "name" | "latest" | "visits" | "pets_count";
 
 export default function CustomersPage() {
@@ -40,6 +44,7 @@ export default function CustomersPage() {
     lapsed45: 0,
     memberTarget: 0,
     vipFullPrice: 0,
+    incomplete: 0,
   });
   const [stats, setStats] = useState<CustomerStatsKPI>({
     totalCustomers: 0,
@@ -57,8 +62,12 @@ export default function CustomersPage() {
 
   // Modals state
   const [detailCustomerId, setDetailCustomerId] = useState<string | null>(null);
+  const [detailRefreshKey, setDetailRefreshKey] = useState(0);
   const [isCustomerFormOpen, setIsCustomerFormOpen] = useState(false);
   const [customerToEdit, setCustomerToEdit] = useState<CustomerWithPets | null>(null);
+  const [isMergeModalOpen, setIsMergeModalOpen] = useState(false);
+  const [customerToMerge, setCustomerToMerge] = useState<CustomerWithPets | null>(null);
+  const [mergeBannerText, setMergeBannerText] = useState<string | null>(null);
   const [isPetFormOpen, setIsPetFormOpen] = useState(false);
   const [petToEdit, setPetToEdit] = useState<Pet | null>(null);
   const [targetCustomerForPet, setTargetCustomerForPet] = useState<CustomerWithPets | null>(null);
@@ -92,7 +101,12 @@ export default function CustomersPage() {
 
   const handleSelectFilter = (nextFilter: FilterType) => {
     setFilter(nextFilter);
-    if (nextFilter === "lapsed45" || nextFilter === "member_target" || nextFilter === "vip_full_price") {
+    if (
+      nextFilter === "lapsed45" ||
+      nextFilter === "member_target" ||
+      nextFilter === "vip_full_price" ||
+      nextFilter === "incomplete"
+    ) {
       setSort("visits");
     }
   };
@@ -118,6 +132,11 @@ export default function CustomersPage() {
   const handleOpenEditCustomer = (customer: CustomerWithPets) => {
     setCustomerToEdit(customer);
     setIsCustomerFormOpen(true);
+  };
+
+  const handleOpenMergeCustomer = (customer: CustomerWithPets) => {
+    setCustomerToMerge(customer);
+    setIsMergeModalOpen(true);
   };
 
   const handleOpenAddPet = (customer: CustomerWithPets) => {
@@ -300,6 +319,18 @@ export default function CustomersPage() {
             </button>
             <button
               type="button"
+              onClick={() => handleSelectFilter("incomplete")}
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1 ${
+                filter === "incomplete"
+                  ? "bg-amber-700 text-white shadow-xs"
+                  : "bg-amber-50 text-amber-900 hover:bg-amber-100 border border-amber-300/70"
+              }`}
+            >
+              <UserX className="w-3.5 h-3.5" />
+              <span>ข้อมูลไม่ครบ ({segmentCounts.incomplete})</span>
+            </button>
+            <button
+              type="button"
               onClick={() => handleSelectFilter("membership")}
               className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1 ${
                 filter === "membership"
@@ -348,13 +379,15 @@ export default function CustomersPage() {
             </button>
           </div>
 
-          {(filter === "lapsed45" || filter === "member_target" || filter === "vip_full_price") && (
+          {(filter === "lapsed45" || filter === "member_target" || filter === "vip_full_price" || filter === "incomplete") && (
             <div className={`px-3 py-2 rounded-xl text-xs border flex items-center gap-2 ${
               filter === "lapsed45"
                 ? "bg-rose-50/70 border-rose-200 text-rose-900"
                 : filter === "member_target"
                   ? "bg-sky-50/70 border-sky-200 text-sky-900"
-                  : "bg-violet-50/70 border-violet-200 text-violet-900"
+                  : filter === "incomplete"
+                    ? "bg-amber-50/80 border-amber-200 text-amber-950"
+                    : "bg-violet-50/70 border-violet-200 text-violet-900"
             }`}>
               <AlertTriangle className="w-4 h-4 shrink-0" />
               <span>
@@ -362,11 +395,29 @@ export default function CustomersPage() {
                   ? "กลุ่มลูกค้าที่ไม่ได้มากรูมมิ่งเกิน 45 วัน (ตัด Walk in ออกแล้ว) เรียงตามคนที่เคยมาบ่อยขึ้นก่อน เพื่อคัดลอกเบอร์หรือทัก LINE ชวนกลับมาอาบน้ำ"
                   : filter === "member_target"
                     ? "ลูกค้าที่มา 2–4 ครั้ง และยังไม่มีสมาชิก/คูปอง — เหมาะเสนอขายสมาชิกรายปี 299 เพื่อดึงให้กลับมาบ่อยขึ้นเป็นขาประจำ"
-                    : "ขาประจำที่มา 5 ครั้งขึ้นไปโดยไม่มีสมาชิก (จ่ายเต็มเป็นหลัก) — ไม่ควรชวนลด 10% ให้เสียมาร์จิ้น ให้เน้นดูแลพิเศษ ขายบริการเสริม หรือเสนอคูปองเงินสด 3,000"}
+                    : filter === "incomplete"
+                      ? "รายชื่อที่ยังขาดเบอร์โทร, ใช้ชื่อชั่วคราว (เช่น - หรือ Walk in), หรือยังไม่มีข้อมูลสัตว์เลี้ยง — กดเปิดการ์ดเพื่อเติมข้อมูลหรือรวมกับรายชื่อหลักที่ซ้ำกัน"
+                      : "ขาประจำที่มา 5 ครั้งขึ้นไปโดยไม่มีสมาชิก (จ่ายเต็มเป็นหลัก) — ไม่ควรชวนลด 10% ให้เสียมาร์จิ้น ให้เน้นดูแลพิเศษ ขายบริการเสริม หรือเสนอคูปองเงินสด 3,000"}
               </span>
             </div>
           )}
         </div>
+
+        {mergeBannerText && (
+          <div className="px-4 py-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-bold flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>{mergeBannerText}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setMergeBannerText(null)}
+              className="text-emerald-700 hover:text-emerald-950 cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
 
         {/* Customer Cards Grid */}
         {loading ? (
@@ -407,9 +458,16 @@ export default function CustomersPage() {
                   <div>
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <h3 className="text-base font-bold text-stone-900 group-hover:text-amber-600 transition-colors truncate">
-                          {c.name}
-                        </h3>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <h3 className="text-base font-bold text-stone-900 group-hover:text-amber-600 transition-colors truncate">
+                            {c.name}
+                          </h3>
+                          {isAnonymousCustomerName(c.name) && (
+                            <span className="px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 text-[10px] font-bold border border-amber-200">
+                              ยังไม่ระบุชื่อจริง
+                            </span>
+                          )}
+                        </div>
                         {c.phone ? (
                           <div className="flex items-center gap-2 mt-0.5">
                             <a
@@ -434,7 +492,9 @@ export default function CustomersPage() {
                             </button>
                           </div>
                         ) : (
-                          <p className="text-[11px] text-stone-400 mt-0.5">ไม่มีเบอร์โทรศัพท์</p>
+                          <p className={`text-[11px] mt-0.5 ${isCustomerIncomplete(c) ? "text-amber-700 font-semibold" : "text-stone-400"}`}>
+                            ไม่มีเบอร์โทรศัพท์
+                          </p>
                         )}
                       </div>
 
@@ -552,9 +612,11 @@ export default function CustomersPage() {
       <CustomerDetailModal
         isOpen={Boolean(detailCustomerId)}
         customerId={detailCustomerId}
+        refreshKey={detailRefreshKey}
         onClose={() => setDetailCustomerId(null)}
         onRefreshParent={() => loadData(true)}
         onEditCustomer={(cust) => handleOpenEditCustomer(cust)}
+        onMergeCustomer={(cust) => handleOpenMergeCustomer(cust)}
         onAddPet={(cust) => handleOpenAddPet(cust)}
         onEditPet={(pet, cust) => handleOpenEditPet(pet, cust)}
       />
@@ -564,9 +626,22 @@ export default function CustomersPage() {
         onClose={() => setIsCustomerFormOpen(false)}
         onSuccess={(cId) => {
           loadData(true);
+          setDetailRefreshKey((k) => k + 1);
           if (cId) setDetailCustomerId(cId);
         }}
         initialCustomer={customerToEdit}
+      />
+
+      <MergeCustomerModal
+        isOpen={isMergeModalOpen}
+        currentCustomer={customerToMerge}
+        onClose={() => setIsMergeModalOpen(false)}
+        onSuccess={(targetCustomerId, summaryText) => {
+          loadData(true);
+          setDetailCustomerId(targetCustomerId);
+          setDetailRefreshKey((k) => k + 1);
+          setMergeBannerText(summaryText);
+        }}
       />
 
       <PetFormModal
@@ -574,6 +649,7 @@ export default function CustomersPage() {
         onClose={() => setIsPetFormOpen(false)}
         onSuccess={() => {
           loadData(true);
+          setDetailRefreshKey((k) => k + 1);
         }}
         customerId={targetCustomerForPet?.id || ""}
         customerName={targetCustomerForPet?.name}

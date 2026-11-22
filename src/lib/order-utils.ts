@@ -87,6 +87,20 @@ export function isAnonymousCustomerName(name?: string | null): boolean {
 }
 
 /**
+ * ตรวจสอบว่าข้อมูลลูกค้ายังไม่สมบูรณ์ (ชื่อชั่วคราว, ไม่มีเบอร์โทร, หรือยังไม่มีสัตว์เลี้ยง)
+ */
+export function isCustomerIncomplete(customer: {
+  name?: string | null;
+  phone?: string | null;
+  pets?: Array<unknown> | null;
+}): boolean {
+  const missingName = isAnonymousCustomerName(customer.name);
+  const missingPhone = !(customer.phone || "").trim();
+  const missingPets = !customer.pets || customer.pets.length === 0;
+  return missingName || missingPhone || missingPets;
+}
+
+/**
  * คืนค่าวันที่ปัจจุบันใน Timezone ไทย (YYYY-MM-DD)
  */
 export function getBangkokTodayString(): string {

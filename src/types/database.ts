@@ -53,6 +53,7 @@ export interface CustomerSegmentCounts {
   lapsed45: number;
   memberTarget: number;
   vipFullPrice: number;
+  incomplete: number;
 }
 
 export interface Pet {
